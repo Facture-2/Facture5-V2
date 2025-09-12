@@ -132,6 +132,8 @@ export default function SupplierHeatmapChart({ suppliers, purchaseOrders, suppli
 
         {/* Légende */}
      
+      </div>
+
       {/* Analyse des tendances mensuelles */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
