@@ -117,7 +117,8 @@ export default function SupplierHeatmapChart({ suppliers, purchaseOrders, suppli
   }).sort((a, b) => b.total - a.total);
 
   return (
- 
+    <div className="space-y-6">
+     
       
 
       {/* Analyse des tendances mensuelles */}
