@@ -19,47 +19,6 @@ export default function SupplierHeatmapChart({ suppliers, purchaseOrders, suppli
   ])].sort((a, b) => b - a);
 
   // Générer les données de la heatmap
-  const generateHeatmapData = () => {
-    const data: any[] = [];
-    let maxValue = 0;
-
-    suppliers.forEach(supplier => {
-      months.forEach((month, monthIndex) => {
-        let value = 0;
-        let count = 0;
-
-        if (viewMode === 'orders') {
-          const monthOrders = purchaseOrders.filter(order => {
-            const orderDate = new Date(order.date);
-            return orderDate.getMonth() === monthIndex && 
-                   orderDate.getFullYear() === selectedYear &&
-                   order.supplierId === supplier.id;
-          });
-          value = monthOrders.reduce((sum, order) => sum + order.totalTTC, 0);
-          count = monthOrders.length;
-        } else {
-          const monthPayments = supplierPayments.filter(payment => {
-            const paymentDate = new Date(payment.paymentDate);
-            return paymentDate.getMonth() === monthIndex && 
-                   paymentDate.getFullYear() === selectedYear &&
-                   payment.supplierId === supplier.id;
-          });
-          value = monthPayments.reduce((sum, payment) => sum + payment.amount, 0);
-          count = monthPayments.length;
-        }
-
-        maxValue = Math.max(maxValue, value);
-        
-        data.push({
-          supplier: supplier.name,
-          month: monthIndex,
-          monthName: month,
-          value,
-          count,
-          intensity: 0 // sera calculé après
-        });
-      });
-    });
 
     // Calculer l'intensité (0-1)
     return data.map(item => ({
