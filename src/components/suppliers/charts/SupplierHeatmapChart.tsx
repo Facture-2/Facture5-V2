@@ -118,7 +118,36 @@ export default function SupplierHeatmapChart({ suppliers, purchaseOrders, suppli
 
   return (
     <div className="space-y-6">
-     
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex items-center justify-between mb-6">
+
+         
+
+            {/* Toggle view mode */}
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('orders')}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  viewMode === 'orders' 
+                    ? 'bg-white dark:bg-gray-700 text-orange-600 shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+                }`}
+              >
+                Commandes
+              </button>
+              <button
+                onClick={() => setViewMode('payments')}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  viewMode === 'payments' 
+                    ? 'bg-white dark:bg-gray-700 text-green-600 shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
+                }`}
+              >
+                Paiements
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Heatmap */}
         <div className="overflow-x-auto">
