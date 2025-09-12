@@ -119,18 +119,7 @@ export default function SupplierHeatmapChart({ suppliers, purchaseOrders, suppli
   return (
     <div className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div className="flex items-center justify-between mb-6">
-
-          <div className="flex items-center space-x-4">
-            {/* Sélecteur d'année */}
-          
-            {/* Toggle view mode */}
-            <div className="flex bg-gray-100 rounded-lg p-1">
-            
-             
-            </div>
-          </div>
-        </div>
+       
 
         {/* Heatmap */}
         <div className="overflow-x-auto">
