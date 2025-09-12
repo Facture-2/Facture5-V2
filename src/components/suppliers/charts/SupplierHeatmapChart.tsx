@@ -128,49 +128,10 @@ export default function SupplierHeatmapChart({ suppliers, purchaseOrders, suppli
                 {/* Cellules pour chaque mois */}
                
         {/* Tooltip détaillé */}
-        {hoveredCell && (
-          <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg">
-            <div className="text-center">
-              <p className="font-medium text-orange-900 dark:text-orange-100">
-                {hoveredCell.supplier} - {months[hoveredCell.month]} {selectedYear}
-              </p>
-              <p className="text-sm text-orange-800 dark:text-orange-200">
-                {getTooltipContent(getCellData(hoveredCell.supplier, hoveredCell.month)).content}
-              </p>
-            </div>
-          </div>
-        )}
+      
 
         {/* Légende */}
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Intensité:</span>
-            <div className="flex items-center space-x-1">
-              <div className="w-4 h-4 bg-gray-100 dark:bg-gray-600 rounded"></div>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Aucun</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-4 h-4 bg-orange-200 rounded"></div>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Faible</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-4 h-4 bg-orange-400 rounded"></div>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Moyen</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-4 h-4 bg-orange-500 rounded"></div>
-              <span className="text-xs text-gray-500 dark:text-gray-400">Élevé</span>
-            </div>
-          </div>
-          
-          <div className="text-right">
-            <p className="text-sm text-gray-600 dark:text-gray-300">
-              Total {selectedYear}: {monthlyTotals.reduce((sum, total) => sum + total, 0).toLocaleString()} MAD
-            </p>
-          </div>
-        </div>
-      </div>
-
+     
       {/* Analyse des tendances mensuelles */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
