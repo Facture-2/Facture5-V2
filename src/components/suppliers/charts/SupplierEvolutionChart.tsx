@@ -132,11 +132,10 @@ export default function SupplierEvolutionChart({ data }: SupplierEvolutionChartP
           </div>
         </div>
 
-            <div className="text-xs text-blue-700 dark:text-blue-300">Année actuelle</div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-            <div className="text-lg font-bold text-gray-600 dark:text-gray-300">{previousYearTotal.toLocaleString()}</div>
-            <div className="text-xs text-gray-700 dark:text-gray-400">Année précédente</div>
+          <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+            <div className="text-lg font-bold text-blue-600">{totalOrders.toLocaleString()}</div>
+            <div className="text-xs text-blue-700 dark:text-blue-300">Total Commandes</div>
           </div>
           <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
             <div className="text-lg font-bold text-green-600">{totalPayments.toLocaleString()}</div>
@@ -146,7 +145,7 @@ export default function SupplierEvolutionChart({ data }: SupplierEvolutionChartP
             <div className="text-lg font-bold text-orange-600">
               {Math.abs(finalBalance).toLocaleString()}
             </div>
-            <div className="text-xs text-green-700 dark:text-green-300">Différence (MAD)</div>
+            <div className="text-xs text-orange-700 dark:text-orange-300">Différence (MAD)</div>
           </div>
           <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
             <div className="text-lg font-bold text-purple-600">
