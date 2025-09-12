@@ -122,58 +122,11 @@ export default function SupplierHeatmapChart({ suppliers, purchaseOrders, suppli
        
 
         {/* Heatmap */}
-        <div className="overflow-x-auto">
-          <div className="min-w-full">
-            {/* En-têtes des mois */}
-            <div className="grid grid-cols-13 gap-1 mb-2">
-              <div className="h-8"></div> {/* Espace pour les noms de fournisseurs */}
-              {months.map((month, index) => (
-                <div key={index} className="h-8 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
-                  {month}
-                </div>
-              ))}
-            </div>
-
+      
             {/* Lignes des fournisseurs */}
-            {suppliers.map((supplier, supplierIndex) => (
-              <div key={supplier.id} className="grid grid-cols-13 gap-1 mb-1">
-                {/* Nom du fournisseur */}
-                <div className="h-8 flex items-center text-xs font-medium text-gray-900 dark:text-gray-100 pr-2 truncate">
-                  {supplier.name}
-                </div>
-                
+         
                 {/* Cellules pour chaque mois */}
-                {months.map((month, monthIndex) => {
-                  const cellData = getCellData(supplier.name, monthIndex);
-                  const tooltip = getTooltipContent(cellData);
-                  
-                  return (
-                    <div
-                      key={monthIndex}
-                      className={`h-8 rounded cursor-pointer transition-all duration-200 border ${
-                        hoveredCell?.month === monthIndex && hoveredCell?.supplier === supplier.name
-                          ? 'border-orange-400 scale-110 z-10 relative shadow-lg'
-                          : 'border-gray-200 dark:border-gray-600'
-                      } ${getIntensityColor(cellData?.intensity || 0)}`}
-                      onMouseEnter={() => setHoveredCell({ month: monthIndex, supplier: supplier.name })}
-                      onMouseLeave={() => setHoveredCell(null)}
-                      title={tooltip.content}
-                    >
-                      {cellData && cellData.value > 0 && (
-                        <div className="h-full flex items-center justify-center">
-                          <span className="text-xs font-bold text-gray-800 dark:text-gray-100">
-                            {cellData.count}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
-
+               
         {/* Tooltip détaillé */}
         {hoveredCell && (
           <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg">
