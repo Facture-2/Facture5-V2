@@ -118,7 +118,22 @@ export default function SupplierHeatmapChart({ suppliers, purchaseOrders, suppli
 
   return (
     <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+       
+
+        {/* Heatmap */}
+      
+            {/* Lignes des fournisseurs */}
+         
+                {/* Cellules pour chaque mois */}
+               
+        {/* Tooltip détaillé */}
+      
+
+        {/* Légende */}
      
+      </div>
+      
 
       {/* Analyse des tendances mensuelles */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
