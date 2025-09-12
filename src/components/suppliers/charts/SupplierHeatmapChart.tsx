@@ -20,12 +20,6 @@ export default function SupplierHeatmapChart({ suppliers, purchaseOrders, suppli
 
   // Générer les données de la heatmap
 
-    // Calculer l'intensité (0-1)
-    return data.map(item => ({
-      ...item,
-      intensity: maxValue > 0 ? item.value / maxValue : 0
-    }));
-  };
 
   const heatmapData = generateHeatmapData();
 
