@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Building2, Lock, Mail, ArrowLeft, UserPlus } from 'lucide-react';
+import { Building2, Lock, Mail, ArrowLeft, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '../../config/firebase';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -10,6 +12,8 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [showRegister, setShowRegister] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   
   const { login } = useAuth();
   const { language, setLanguage, t } = useLanguage();
@@ -37,6 +41,10 @@ export default function Login() {
 
   if (showRegister) {
     return <RegisterForm onBack={() => setShowRegister(false)} />;
+  }
+
+  if (showForgotPassword) {
+    return <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />;
   }
 
   return (
@@ -157,6 +165,15 @@ export default function Login() {
               <UserPlus className="w-4 h-4" />
               <span>Créer un compte</span>
             </button>
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-gray-600 hover:text-gray-800 underline"
+              >
+                Mot de passe oublié ?
+              </button>
+            </div>
           </div>
           
           <div className="text-center mt-4">
@@ -172,9 +189,10 @@ export default function Login() {
 
 // Composant d'inscription
 function RegisterForm({ onBack }: { onBack: () => void }) {
-  const { register } = useAuth();
+  const { register, sendEmailVerification } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -233,7 +251,9 @@ function RegisterForm({ onBack }: { onBack: () => void }) {
       };
 
       const success = await register(formData.email, formData.password, companyData);
-      if (!success) {
+      if (success) {
+        setEmailSent(true);
+      } else {
         setError('Erreur lors de la création du compte');
       }
     } catch (err) {
@@ -242,6 +262,44 @@ function RegisterForm({ onBack }: { onBack: () => void }) {
       setIsLoading(false);
     }
   };
+
+  if (emailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Mail className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              📧 Vérifiez votre email
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Un email de vérification a été envoyé à <strong>{formData.email}</strong>
+            </p>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h3 className="font-medium text-blue-900 mb-2">📋 Étapes suivantes :</h3>
+              <ol className="text-sm text-blue-800 space-y-1 text-left">
+                <li>1. Ouvrez votre boîte email</li>
+                <li>2. Cliquez sur le lien de vérification</li>
+                <li>3. Revenez ici pour vous connecter</li>
+              </ol>
+            </div>
+            
+            <button
+              onClick={onBack}
+              className="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200"
+            >
+              Retour à la connexion
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
@@ -503,6 +561,161 @@ function RegisterForm({ onBack }: { onBack: () => void }) {
               className="flex-1 py-3 px-4 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               {isLoading ? 'Création...' : 'Créer mon compte'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// Composant de récupération de mot de passe
+function ForgotPasswordForm({ onBack }: { onBack: () => void }) {
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setEmailSent(true);
+    } catch (err: any) {
+      if (err.code === 'auth/user-not-found') {
+        setError('Aucun compte trouvé avec cette adresse email');
+      } else if (err.code === 'auth/invalid-email') {
+        setError('Adresse email invalide');
+      } else {
+        setError('Erreur lors de l\'envoi de l\'email');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (emailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                <CheckCircle className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              ✅ Email envoyé !
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Un lien de réinitialisation a été envoyé à <strong>{email}</strong>
+            </p>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h3 className="font-medium text-blue-900 mb-2">📋 Instructions :</h3>
+              <ol className="text-sm text-blue-800 space-y-1 text-left">
+                <li>1. Vérifiez votre boîte email (et les spams)</li>
+                <li>2. Cliquez sur le lien de réinitialisation</li>
+                <li>3. Créez un nouveau mot de passe</li>
+                <li>4. Revenez ici pour vous connecter</li>
+              </ol>
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setEmailSent(false);
+                  setEmail('');
+                }}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Renvoyer l'email
+              </button>
+              <button
+                onClick={onBack}
+                className="flex-1 bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200"
+              >
+                Retour à la connexion
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <Link
+        to="/"
+        className="fixed top-6 left-6 inline-flex items-center space-x-2 text-gray-600 hover:text-gray-900 hover:bg-white/80 px-3 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="font-medium">Retour</span>
+      </Link>
+
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Lock className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            🔑 Mot de passe oublié
+          </h2>
+          <p className="text-gray-600">
+            Saisissez votre adresse email pour recevoir un lien de réinitialisation
+          </p>
+        </div>
+
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              Adresse email
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Mail className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                placeholder="votre@email.com"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center space-x-2">
+              <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="flex space-x-3">
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex-1 py-3 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Retour
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 py-3 px-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              {isLoading ? 'Envoi...' : 'Envoyer le lien'}
             </button>
           </div>
         </form>

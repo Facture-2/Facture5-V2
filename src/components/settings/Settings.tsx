@@ -4,11 +4,12 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Building2, User, Bell, Shield, FileText, Palette, X } from 'lucide-react';
+import { Building2, User, Bell, Shield, FileText, Palette, X, Mail, CheckCircle, AlertTriangle } from 'lucide-react';
 import TemplateSelector from '../templates/TemplateSelector';
+import EmailVerificationModal from '../auth/EmailVerificationModal';
 
 export default function Settings() {
-  const { user, updateCompanySettings } = useAuth();
+  const { user, firebaseUser, updateCompanySettings, sendEmailVerification } = useAuth();
   const { t } = useLanguage();
   const [companyData, setCompanyData] = useState({
     name: '',
@@ -35,6 +36,10 @@ export default function Settings() {
   const [signatureUrl, setSignatureUrl] = useState('');
   const [isSavingSignature, setIsSavingSignature] = useState(false);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
+
+  const [showEmailVerificationModal, setShowEmailVerificationModal] = useState(false);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   // Initialiser les paramètres avec les données utilisateur
   React.useEffect(() => {
@@ -627,11 +632,47 @@ export default function Settings() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Email
                 </label>
-                <input
-                  type="email"
-                  defaultValue={user?.email}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                />
+                <div className="relative">
+                  <input
+                    type="email"
+                    defaultValue={user?.email}
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                    {firebaseUser?.emailVerified ? (
+                      <CheckCircle className="w-5 h-5 text-green-500" title="Email vérifié" />
+                    ) : (
+                      <AlertTriangle className="w-5 h-5 text-amber-500" title="Email non vérifié" />
+                    )}
+                  </div>
+                </div>
+                
+                {/* Statut de vérification */}
+                {firebaseUser && !firebaseUser.emailVerified && (
+                  <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <AlertTriangle className="w-4 h-4 text-amber-600" />
+                        <span className="text-sm text-amber-800 dark:text-amber-200">Email non vérifié</span>
+                      </div>
+                      <button
+                        onClick={() => setShowEmailVerificationModal(true)}
+                        className="text-sm text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 font-medium underline"
+                      >
+                        Vérifier maintenant
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {firebaseUser?.emailVerified && (
+                  <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-sm text-green-800 dark:text-green-200">Email vérifié ✅</span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -707,6 +748,29 @@ export default function Settings() {
             </div>
 
             <div className="space-y-3">
+              {/* Vérification d'email */}
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Mail className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <p className="font-medium text-blue-900 dark:text-blue-100">Vérification d'email</p>
+                      <p className="text-sm text-blue-700 dark:text-blue-300">
+                        {firebaseUser?.emailVerified ? 'Email vérifié ✅' : 'Email non vérifié ⚠️'}
+                      </p>
+                    </div>
+                  </div>
+                  {!firebaseUser?.emailVerified && (
+                    <button
+                      onClick={() => setShowEmailVerificationModal(true)}
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors"
+                    >
+                      Vérifier
+                    </button>
+                  )}
+                </div>
+              </div>
+              
               <button className="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 Changer le mot de passe
               </button>
@@ -819,6 +883,12 @@ export default function Settings() {
           </div>
         </div>
       )}
+
+      {/* Modal de vérification d'email */}
+      <EmailVerificationModal 
+        isOpen={showEmailVerificationModal}
+        onClose={() => setShowEmailVerificationModal(false)}
+      />
     </div>
   );
 }

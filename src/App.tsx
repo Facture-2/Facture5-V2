@@ -8,6 +8,7 @@ import { UserManagementProvider } from './contexts/UserManagementContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ExpirationNotification from './components/auth/ExpirationNotification';
 import ExpiredAccountModal from './components/auth/ExpiredAccountModal';
+import EmailVerificationBanner from './components/auth/EmailVerificationBanner';
 import HomePage from './components/home/HomePage';
 import Login from './components/auth/Login';
 import Dashboard from './components/dashboard/Dashboard';
@@ -137,6 +138,9 @@ function AppContent() {
   }
   return (
     <>
+      {/* Bannière de vérification d'email - FIXE AU-DESSUS DE TOUT */}
+      <EmailVerificationBanner />
+      
       {/* Notification d'expiration proche - FIXE AU-DESSUS DE TOUT */}
       {showExpirationNotification && subscriptionStatus.shouldShowNotification && (
         <div className="fixed top-0 left-0 right-0 z-[100]">
@@ -148,7 +152,7 @@ function AppContent() {
         </div>
       )}
       
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 flex ${showExpirationNotification && subscriptionStatus.shouldShowNotification ? 'pt-16' : ''}`}>
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 flex ${showExpirationNotification && subscriptionStatus.shouldShowNotification ? 'pt-32' : 'pt-16'}`}>
       <LicenseAlert onUpgrade={() => setShowUpgradePage(true)} />
       <Sidebar 
         open={sidebarOpen} 

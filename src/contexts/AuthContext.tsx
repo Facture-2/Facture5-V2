@@ -3,6 +3,8 @@ import {
   User as FirebaseUser,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   signOut,
   onAuthStateChanged
 } from 'firebase/auth';
@@ -63,6 +65,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, companyData: Company) => Promise<boolean>;
+  sendEmailVerification: () => Promise<void>;
+  sendPasswordReset: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   upgradeSubscription: () => Promise<void>;
   updateCompanySettings: (settings: Partial<Company>) => Promise<void>;
@@ -363,11 +367,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const userId = userCredential.user.uid;
 
+      // Envoyer l'email de vérification
+      await sendEmailVerification(userCredential.user);
+
       // Sauvegarder les données de l'entreprise dans Firestore
       await setDoc(doc(db, 'entreprises', userId), {
         ...companyData,
         ownerEmail: email,
         ownerName: email.split('@')[0],
+        emailVerified: false,
         subscription: 'free',
         subscriptionDate: new Date().toISOString(),
         expiryDate: new Date().toISOString(),
@@ -382,6 +390,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const sendEmailVerificationManual = async (): Promise<void> => {
+    if (!firebaseUser) {
+      throw new Error('Aucun utilisateur connecté');
+    }
+    
+    try {
+      await sendEmailVerification(firebaseUser);
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de l\'email de vérification:', error);
+      throw error;
+    }
+  };
+
+  const sendPasswordReset = async (email: string): Promise<void> => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de l\'email de réinitialisation:', error);
+      throw error;
+    }
+  };
   const upgradeSubscription = async (): Promise<void> => {
     if (!user) return;
     
@@ -484,6 +513,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: !!user,
     login,
     register,
+    sendEmailVerification: sendEmailVerificationManual,
+    sendPasswordReset,
     logout,
     upgradeSubscription,
     updateCompanySettings,
