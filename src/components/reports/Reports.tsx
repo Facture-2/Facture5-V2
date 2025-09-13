@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BarChart3, TrendingUp, AlertTriangle, DollarSign, Calendar, Download } from 'lucide-react';
+import { useData } from '../../contexts/DataContext';
 import FinancialAlerts from './FinancialAlerts';
 import FinancialKPIs from './FinancialKPIs';
 import CashflowChart from './charts/CashflowChart';
@@ -12,6 +13,41 @@ import TopClientsChart from './charts/TopClientsChart';
 const Reports: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
   const [activeTab, setActiveTab] = useState('overview');
+  const { invoices } = useData();
+
+  // Calculate top clients data from invoices
+  const topClientsData = React.useMemo(() => {
+    if (!invoices || invoices.length === 0) return [];
+    
+    const clientStats = invoices.reduce((acc: any, invoice: any) => {
+      const clientName = invoice.clientName || 'Unknown Client';
+      if (!acc[clientName]) {
+        acc[clientName] = {
+          name: clientName,
+          totalAmount: 0,
+          paidAmount: 0,
+          unpaidAmount: 0,
+          invoiceCount: 0
+        };
+      }
+      
+      const amount = parseFloat(invoice.total) || 0;
+      acc[clientName].totalAmount += amount;
+      acc[clientName].invoiceCount += 1;
+      
+      if (invoice.status === 'paid') {
+        acc[clientName].paidAmount += amount;
+      } else {
+        acc[clientName].unpaidAmount += amount;
+      }
+      
+      return acc;
+    }, {});
+    
+    return Object.values(clientStats)
+      .sort((a: any, b: any) => b.totalAmount - a.totalAmount)
+      .slice(0, 10);
+  }, [invoices]);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -83,12 +119,12 @@ const Reports: React.FC = () => {
       <div className="space-y-6">
         {activeTab === 'overview' && (
           <>
-            <FinancialKPIs />
+            <FinancialKPIs invoices={invoices || []} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <RevenueEvolutionChart />
               <CashflowChart />
             </div>
-            <TopClientsChart />
+            <TopClientsChart data={topClientsData} />
           </>
         )}
 
@@ -96,7 +132,7 @@ const Reports: React.FC = () => {
           <div className="space-y-6">
             <RevenueEvolutionChart />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <TopClientsChart />
+              <TopClientsChart data={topClientsData} />
               <CashflowChart />
             </div>
           </div>
