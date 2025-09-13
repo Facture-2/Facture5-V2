@@ -1,18 +1,45 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Calendar, DollarSign } from 'lucide-react';
-
-interface CashflowData {
-  month: string;
-  expectedRevenue: number;
-  invoicesCount: number;
-}
+import { TrendingUp, Calendar, DollarSign, Clock } from 'lucide-react';
+import { Invoice } from '../../../contexts/DataContext';
 
 interface CashflowChartProps {
-  data: CashflowData[];
+  invoices: Invoice[];
 }
 
-export default function CashflowChart({ data }: CashflowChartProps) {
+export default function CashflowChart({ invoices }: CashflowChartProps) {
+  // Générer les données réelles à partir des factures
+  const generateCashflowData = () => {
+    const months = [];
+    const currentDate = new Date();
+    
+    for (let i = 0; i < 6; i++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + i, 1);
+      const monthName = date.toLocaleDateString('fr-FR', { month: 'short' });
+      
+      // Factures avec échéance dans ce mois
+      const monthInvoices = invoices.filter(invoice => {
+        if (invoice.status === 'paid' || invoice.status === 'collected') return false;
+        
+        const dueDate = invoice.dueDate ? new Date(invoice.dueDate) : new Date(invoice.date);
+        return dueDate.getMonth() === date.getMonth() && 
+               dueDate.getFullYear() === date.getFullYear();
+      });
+      
+      const expectedRevenue = monthInvoices.reduce((sum, invoice) => sum + invoice.totalTTC, 0);
+      const invoicesCount = monthInvoices.length;
+      
+      months.push({
+        month: monthName,
+        expectedRevenue,
+        invoicesCount
+      });
+    }
+    
+    return months;
+  };
+
+  const data = generateCashflowData();
   const totalExpected = data.reduce((sum, item) => sum + item.expectedRevenue, 0);
   const totalInvoices = data.reduce((sum, item) => sum + item.invoicesCount, 0);
 
@@ -74,45 +101,45 @@ export default function CashflowChart({ data }: CashflowChartProps) {
               {totalInvoices > 0 ? (totalExpected / totalInvoices).toFixed(0) : '0'}
             </span>
           </div>
-          <p className="text-sm text-purple-700 dark:text-purple-300">MAD/commande</p>
+          <p className="text-sm text-purple-700 dark:text-purple-300">MAD/facture</p>
         </div>
       </div>
 
       {/* Graphique */}
       <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis 
-              dataKey="month" 
-              stroke="#6B7280"
-              fontSize={12}
-            />
-            <YAxis 
-              stroke="#6B7280"
-              fontSize={12}
-              tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar 
-              dataKey="expectedRevenue" 
-              fill="#3B82F6"
-              radius={[4, 4, 0, 0]}
-              name="Montant attendu"
-            />
-          </BarChart>
-        </ResponsiveContainer>
+        {totalExpected > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis 
+                dataKey="month" 
+                stroke="#6B7280"
+                fontSize={12}
+              />
+              <YAxis 
+                stroke="#6B7280"
+                fontSize={12}
+                tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar 
+                dataKey="expectedRevenue" 
+                fill="#3B82F6"
+                radius={[4, 4, 0, 0]}
+                name="Montant attendu"
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="text-center py-12">
+            <Clock className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">Aucune facture en attente avec échéance</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Créez des factures avec des dates d'échéance pour voir les prévisions
+            </p>
+          </div>
+        )}
       </div>
-
-      {data.length === 0 && (
-        <div className="text-center py-12">
-          <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">Aucune facture en attente avec échéance</p>
-          <p className="text-sm text-gray-400 mt-1">
-            Ajoutez des dates d'échéance à vos factures pour voir les prévisions
-          </p>
-        </div>
-      )}
     </div>
   );
 }

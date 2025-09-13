@@ -1,38 +1,67 @@
 import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Users, Crown, AlertTriangle, CheckCircle } from 'lucide-react';
-
-interface ClientData {
-  name: string;
-  totalAmount: number;
-  paidAmount: number;
-  unpaidAmount: number;
-  invoicesCount: number;
-}
+import { Invoice } from '../../../contexts/DataContext';
 
 interface TopClientsChartProps {
-  data: ClientData[];
+  invoices: Invoice[];
 }
 
-export default function TopClientsChart({ data }: TopClientsChartProps) {
+export default function TopClientsChart({ invoices }: TopClientsChartProps) {
   const [viewMode, setViewMode] = useState<'total' | 'paid' | 'unpaid'>('total');
   
+  // Calculer les vraies données des clients à partir des factures
+  const getTopClientsData = () => {
+    if (!invoices || invoices.length === 0) return [];
+    
+    const clientStats = invoices.reduce((acc: any, invoice: Invoice) => {
+      const clientName = invoice.client.name;
+      if (!acc[clientName]) {
+        acc[clientName] = {
+          name: clientName,
+          totalAmount: 0,
+          paidAmount: 0,
+          unpaidAmount: 0,
+          invoiceCount: 0
+        };
+      }
+      
+      const amount = invoice.totalTTC;
+      acc[clientName].totalAmount += amount;
+      acc[clientName].invoiceCount += 1;
+      
+      if (invoice.status === 'paid' || invoice.status === 'collected') {
+        acc[clientName].paidAmount += amount;
+      } else {
+        acc[clientName].unpaidAmount += amount;
+      }
+      
+      return acc;
+    }, {});
+    
+    return Object.values(clientStats)
+      .sort((a: any, b: any) => b.totalAmount - a.totalAmount)
+      .slice(0, 10);
+  };
+
+  const topClientsData = getTopClientsData();
+  
   const getChartData = () => {
-    return data.map(client => ({
+    return topClientsData.map((client: any) => ({
       name: client.name.length > 15 ? client.name.substring(0, 15) + '...' : client.name,
       fullName: client.name,
       total: client.totalAmount,
       paid: client.paidAmount,
       unpaid: client.unpaidAmount,
-      invoices: client.invoicesCount,
+      invoices: client.invoiceCount,
       paymentRate: client.totalAmount > 0 ? (client.paidAmount / client.totalAmount) * 100 : 0
     }));
   };
 
   const chartData = getChartData();
-  const totalRevenue = data.reduce((sum, client) => sum + client.totalAmount, 0);
-  const totalPaid = data.reduce((sum, client) => sum + client.paidAmount, 0);
-  const totalUnpaid = data.reduce((sum, client) => sum + client.unpaidAmount, 0);
+  const totalRevenue = topClientsData.reduce((sum: number, client: any) => sum + client.totalAmount, 0);
+  const totalPaid = topClientsData.reduce((sum: number, client: any) => sum + client.paidAmount, 0);
+  const totalUnpaid = topClientsData.reduce((sum: number, client: any) => sum + client.unpaidAmount, 0);
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -133,85 +162,90 @@ export default function TopClientsChart({ data }: TopClientsChartProps) {
       </div>
 
       {/* Graphique */}
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            layout="horizontal"
-            margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis 
-              type="number"
-              stroke="#6B7280"
-              fontSize={12}
-              tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
-            />
-            <YAxis 
-              type="category"
-              dataKey="name"
-              stroke="#6B7280"
-              fontSize={11}
-              width={75}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar 
-              dataKey={getDataKey()}
-              fill={getBarColor()}
-              radius={[0, 4, 4, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Analyse des clients */}
-      <div className="mt-6 space-y-3">
-        <h4 className="font-medium text-gray-900 dark:text-gray-100">Analyse des Clients</h4>
-        {data.slice(0, 3).map((client, index) => {
-          const paymentRate = client.totalAmount > 0 ? (client.paidAmount / client.totalAmount) * 100 : 0;
-          const isGoodPayer = paymentRate >= 80;
-          
-          return (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm ${
-                  index === 0 ? 'bg-yellow-500' : 
-                  index === 1 ? 'bg-gray-400' : 'bg-orange-500'
-                }`}>
-                  {index === 0 ? <Crown className="w-4 h-4" /> : `#${index + 1}`}
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-gray-100">{client.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {client.invoicesCount} factures • {paymentRate.toFixed(1)}% payé
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-3">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                    {client.totalAmount.toLocaleString()} MAD
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {client.unpaidAmount > 0 ? `${client.unpaidAmount.toLocaleString()} MAD en attente` : 'Tout payé'}
-                  </p>
-                </div>
-                {isGoodPayer ? (
-                  <CheckCircle className="w-5 h-5 text-green-500" />
-                ) : (
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {data.length === 0 && (
+      {chartData.length > 0 ? (
+        <div className="h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              layout="horizontal"
+              margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+              <XAxis 
+                type="number"
+                stroke="#6B7280"
+                fontSize={12}
+                tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
+              />
+              <YAxis 
+                type="category"
+                dataKey="name"
+                stroke="#6B7280"
+                fontSize={11}
+                width={75}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar 
+                dataKey={getDataKey()}
+                fill={getBarColor()}
+                radius={[0, 4, 4, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
         <div className="text-center py-12">
           <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500">Aucune donnée client disponible</p>
+          <p className="text-sm text-gray-400 mt-1">
+            Créez des factures pour voir le classement de vos clients
+          </p>
+        </div>
+      )}
+
+      {/* Analyse des clients */}
+      {topClientsData.length > 0 && (
+        <div className="mt-6 space-y-3">
+          <h4 className="font-medium text-gray-900 dark:text-gray-100">Analyse des Clients</h4>
+          {topClientsData.slice(0, 3).map((client: any, index: number) => {
+            const paymentRate = client.totalAmount > 0 ? (client.paidAmount / client.totalAmount) * 100 : 0;
+            const isGoodPayer = paymentRate >= 80;
+            
+            return (
+              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm ${
+                    index === 0 ? 'bg-yellow-500' : 
+                    index === 1 ? 'bg-gray-400' : 'bg-orange-500'
+                  }`}>
+                    {index === 0 ? <Crown className="w-4 h-4" /> : `#${index + 1}`}
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{client.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {client.invoiceCount} factures • {paymentRate.toFixed(1)}% payé
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {client.totalAmount.toLocaleString()} MAD
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {client.unpaidAmount > 0 ? `${client.unpaidAmount.toLocaleString()} MAD en attente` : 'Tout payé'}
+                    </p>
+                  </div>
+                  {isGoodPayer ? (
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <AlertTriangle className="w-5 h-5 text-red-500" />
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

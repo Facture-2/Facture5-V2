@@ -36,6 +36,39 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
     return null;
   };
 
+  // Vérifier s'il y a des données réelles
+  const hasRealData = data && data.length > 0 && data.some(item => item.currentYear > 0 || item.previousYear > 0);
+
+  if (!hasRealData) {
+    return (
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Évolution du Chiffre d'Affaires</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Comparaison sur 12 mois (année actuelle vs précédente)</p>
+          </div>
+        </div>
+
+        <div className="text-center py-12">
+          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+            <BarChart3 className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Données insuffisantes
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400">
+            Créez des factures payées pour voir l'évolution de votre chiffre d'affaires
+          </p>
+          <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg max-w-md mx-auto">
+            <p className="text-sm text-blue-800 dark:text-blue-300">
+              💡 <strong>Astuce :</strong> Les données apparaîtront automatiquement après avoir créé et marqué des factures comme "payées" ou "encaissées".
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BarChart3, TrendingUp, AlertTriangle, DollarSign, Calendar, Download } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/AuthContext';
 import FinancialAlerts from './FinancialAlerts';
 import FinancialKPIs from './FinancialKPIs';
 import CashflowChart from './charts/CashflowChart';
@@ -12,40 +13,80 @@ import TopClientsChart from './charts/TopClientsChart';
 
 const Reports: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('month');
-  const [activeTab, setActiveTab] = useState('overview');
   const { invoices } = useData();
+  const { user } = useAuth();
 
-  // Prepare revenue evolution data
-  const revenueEvolutionData = React.useMemo(() => {
+  // Vérifier l'accès PRO
+  const isProActive = user?.company.subscription === 'pro' && user?.company.expiryDate && 
+    new Date(user.company.expiryDate) > new Date();
+
+  if (!isProActive) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <BarChart3 className="w-10 h-10 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+            🔒 Fonctionnalité PRO
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            La Gestion Financière est réservée aux abonnés PRO. 
+            Passez à la version PRO pour accéder à cette fonctionnalité avancée.
+          </p>
+          <button className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+            <span className="flex items-center justify-center space-x-2">
+              <BarChart3 className="w-5 h-5" />
+              <span>Passer à PRO - 299 MAD/mois</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Préparer les données d'évolution du chiffre d'affaires avec les vraies données
+  const revenueEvolutionData = useMemo(() => {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
+      'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'
     ];
     
     const currentYear = new Date().getFullYear();
     const previousYear = currentYear - 1;
     
-    return months.map((month, index) => ({
-      month,
-      currentYear: Math.floor(Math.random() * 50000) + 20000, // Mock data
-      previousYear: Math.floor(Math.random() * 45000) + 15000, // Mock data
-      date: `${currentYear}-${String(index + 1).padStart(2, '0')}-01`
-    }));
-  }, []);
+    return months.map((month, index) => {
+      // Revenus année actuelle
+      const currentYearRevenue = invoices
+        .filter(invoice => {
+          const invoiceDate = new Date(invoice.date);
+          return invoiceDate.getMonth() === index && 
+                 invoiceDate.getFullYear() === currentYear &&
+                 (invoice.status === 'paid' || invoice.status === 'collected');
+        })
+        .reduce((sum, invoice) => sum + invoice.totalTTC, 0);
 
-  // Prepare cashflow data
-  const cashflowData = React.useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    return months.map(month => ({
-      month,
-      income: Math.floor(Math.random() * 40000) + 20000,
-      expenses: Math.floor(Math.random() * 30000) + 15000,
-      profit: Math.floor(Math.random() * 15000) + 5000
-    }));
-  }, []);
+      // Revenus année précédente
+      const previousYearRevenue = invoices
+        .filter(invoice => {
+          const invoiceDate = new Date(invoice.date);
+          return invoiceDate.getMonth() === index && 
+                 invoiceDate.getFullYear() === previousYear &&
+                 (invoice.status === 'paid' || invoice.status === 'collected');
+        })
+        .reduce((sum, invoice) => sum + invoice.totalTTC, 0);
 
-  // Prepare payment status data
-  const paymentStatusData = React.useMemo(() => {
+      return {
+        month,
+        currentYear: currentYearRevenue,
+        previousYear: previousYearRevenue,
+        date: `${currentYear}-${String(index + 1).padStart(2, '0')}-01`
+      };
+    });
+  }, [invoices]);
+
+  // Préparer les données de statut de paiement avec les vraies données
+  const paymentStatusData = useMemo(() => {
     if (!invoices || invoices.length === 0) {
       return [
         { name: 'Payées', value: 0, amount: 0, percentage: 0, color: '#10B981' },
@@ -93,75 +134,70 @@ const Reports: React.FC = () => {
     }));
   }, [invoices]);
 
-  // Prepare payment method data
-  const paymentMethodData = React.useMemo(() => {
+  // Préparer les données de mode de paiement avec les vraies données
+  const paymentMethodData = useMemo(() => {
     if (!invoices || invoices.length === 0) {
-      return [
-        { name: 'Virement', value: 0, count: 0, percentage: 0 },
-        { name: 'Espèces', value: 0, count: 0, percentage: 0 },
-        { name: 'Chèque', value: 0, count: 0, percentage: 0 },
-        { name: 'Effet', value: 0, count: 0, percentage: 0 }
-      ];
+      return [];
     }
 
-    const methodStats = invoices.reduce((acc: any, invoice: any) => {
-      const method = invoice.paymentMethod || 'Virement';
+    const paidInvoices = invoices.filter(inv => 
+      (inv.status === 'paid' || inv.status === 'collected') && inv.paymentMethod
+    );
+
+    if (paidInvoices.length === 0) {
+      return [];
+    }
+
+    const methodStats = paidInvoices.reduce((acc: any, invoice) => {
+      const method = invoice.paymentMethod || 'virement';
       if (!acc[method]) {
         acc[method] = { count: 0, amount: 0 };
       }
       acc[method].count += 1;
-      acc[method].amount += parseFloat(invoice.total) || 0;
+      acc[method].amount += invoice.totalTTC;
       return acc;
     }, {});
 
     const totalAmount = Object.values(methodStats).reduce((sum: number, stat: any) => sum + stat.amount, 0);
     
-    const data = [
-      { 
-        name: 'Virement', 
-        value: methodStats.Virement?.amount || 0, 
-        count: methodStats.Virement?.count || 0,
-        percentage: totalAmount > 0 ? ((methodStats.Virement?.amount || 0) / totalAmount) * 100 : 0
-      },
-      { 
-        name: 'Espèces', 
-        value: methodStats.Espèces?.amount || 0, 
-        count: methodStats.Espèces?.count || 0,
-        percentage: totalAmount > 0 ? ((methodStats.Espèces?.amount || 0) / totalAmount) * 100 : 0
-      },
-      { 
-        name: 'Chèque', 
-        value: methodStats.Chèque?.amount || 0, 
-        count: methodStats.Chèque?.count || 0,
-        percentage: totalAmount > 0 ? ((methodStats.Chèque?.amount || 0) / totalAmount) * 100 : 0
-      },
-      { 
-        name: 'Effet', 
-        value: methodStats.Effet?.amount || 0, 
-        count: methodStats.Effet?.count || 0,
-        percentage: totalAmount > 0 ? ((methodStats.Effet?.amount || 0) / totalAmount) * 100 : 0
-      }
-    ];
+    const methodLabels: Record<string, string> = {
+      'virement': 'Virement',
+      'espece': 'Espèces',
+      'cheque': 'Chèque',
+      'effet': 'Effet'
+    };
 
-    return data.filter(item => item.value > 0 || item.count > 0);
+    return Object.entries(methodStats).map(([method, stats]: [string, any]) => ({
+      name: methodLabels[method] || method,
+      value: stats.amount,
+      count: stats.count,
+      percentage: totalAmount > 0 ? (stats.amount / totalAmount) * 100 : 0
+    })).filter(item => item.value > 0);
   }, [invoices]);
-  // Prepare payment delay data
-  const paymentDelayData = React.useMemo(() => {
+
+  // Préparer les données de retard de paiement avec les vraies données
+  const paymentDelayData = useMemo(() => {
     if (!invoices || invoices.length === 0) return [];
     
-    // Filter overdue invoices and group by client
-    const overdueInvoices = invoices.filter((invoice: any) => invoice.status === 'overdue');
-    
-    const clientDelayStats = overdueInvoices.reduce((acc: any, invoice: any) => {
-      const clientName = invoice.clientName || 'Unknown Client';
-      const amount = parseFloat(invoice.total) || 0;
+    // Filtrer les factures en retard
+    const overdueInvoices = invoices.filter(invoice => {
+      if (invoice.status !== 'unpaid' || !invoice.dueDate) return false;
       const dueDate = new Date(invoice.dueDate);
+      return new Date() > dueDate;
+    });
+
+    if (overdueInvoices.length === 0) return [];
+    
+    // Grouper par client
+    const clientDelayStats = overdueInvoices.reduce((acc: any, invoice) => {
+      const clientName = invoice.client.name;
+      const dueDate = new Date(invoice.dueDate!);
       const currentDate = new Date();
       const delayDays = Math.max(0, Math.floor((currentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
       
       if (!acc[clientName]) {
         acc[clientName] = {
-          client: clientName,
+          clientName,
           totalAmount: 0,
           averageDelay: 0,
           invoiceCount: 0,
@@ -169,7 +205,7 @@ const Reports: React.FC = () => {
         };
       }
       
-      acc[clientName].totalAmount += amount;
+      acc[clientName].totalAmount += invoice.totalTTC;
       acc[clientName].invoiceCount += 1;
       acc[clientName].totalDelay += delayDays;
       acc[clientName].averageDelay = acc[clientName].totalDelay / acc[clientName].invoiceCount;
@@ -180,54 +216,13 @@ const Reports: React.FC = () => {
     return Object.values(clientDelayStats)
       .sort((a: any, b: any) => b.totalAmount - a.totalAmount)
       .slice(0, 10);
-  }, []);
-
-  // Calculate top clients data from invoices
-  const topClientsData = React.useMemo(() => {
-    if (!invoices || invoices.length === 0) return [];
-    
-    const clientStats = invoices.reduce((acc: any, invoice: any) => {
-      const clientName = invoice.clientName || 'Unknown Client';
-      if (!acc[clientName]) {
-        acc[clientName] = {
-          name: clientName,
-          totalAmount: 0,
-          paidAmount: 0,
-          unpaidAmount: 0,
-          invoiceCount: 0
-        };
-      }
-      
-      const amount = parseFloat(invoice.total) || 0;
-      acc[clientName].totalAmount += amount;
-      acc[clientName].invoiceCount += 1;
-      
-      if (invoice.status === 'paid') {
-        acc[clientName].paidAmount += amount;
-      } else {
-        acc[clientName].unpaidAmount += amount;
-      }
-      
-      return acc;
-    }, {});
-    
-    return Object.values(clientStats)
-      .sort((a: any, b: any) => b.totalAmount - a.totalAmount)
-      .slice(0, 10);
   }, [invoices]);
 
-  const tabs = [
-    { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'revenue', label: 'Revenue', icon: TrendingUp },
-    { id: 'payments', label: 'Payments', icon: DollarSign },
-    { id: 'alerts', label: 'Alerts', icon: AlertTriangle },
-  ];
-
   const periods = [
-    { value: 'week', label: 'This Week' },
-    { value: 'month', label: 'This Month' },
-    { value: 'quarter', label: 'This Quarter' },
-    { value: 'year', label: 'This Year' },
+    { value: 'week', label: 'Cette semaine' },
+    { value: 'month', label: 'Ce mois' },
+    { value: 'quarter', label: 'Ce trimestre' },
+    { value: 'year', label: 'Cette année' },
   ];
 
   return (
@@ -235,15 +230,19 @@ const Reports: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Financial Reports</h1>
-          <p className="text-gray-600">Comprehensive business analytics and insights</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center space-x-2">
+            <BarChart3 className="w-8 h-8 text-green-600" />
+            <span>Gestion Financière</span>
+            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full font-bold">PRO</span>
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">Analyses financières complètes et KPIs de performance</p>
         </div>
         
         <div className="flex items-center gap-3">
           <select
             value={selectedPeriod}
             onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           >
             {periods.map((period) => (
               <option key={period.value} value={period.value}>
@@ -259,66 +258,33 @@ const Reports: React.FC = () => {
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </nav>
+      {/* KPIs Financiers */}
+      <FinancialKPIs invoices={invoices || []} />
+
+      {/* Graphiques principaux */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RevenueEvolutionChart data={revenueEvolutionData} />
+        <CashflowChart invoices={invoices || []} />
       </div>
 
-      {/* Content */}
-      <div className="space-y-6">
-        {activeTab === 'overview' && (
-          <>
-            <FinancialKPIs invoices={invoices || []} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <RevenueEvolutionChart data={revenueEvolutionData} />
-              <CashflowChart data={cashflowData} />
-            </div>
-            <TopClientsChart data={topClientsData} />
-          </>
-        )}
+      {/* Top Clients */}
+      <TopClientsChart invoices={invoices || []} />
 
-        {activeTab === 'revenue' && (
-          <div className="space-y-6">
-            <RevenueEvolutionChart data={revenueEvolutionData} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <TopClientsChart data={topClientsData} />
-              <CashflowChart data={cashflowData} />
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'payments' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PaymentStatusChart data={paymentStatusData} />
-              <PaymentMethodChart data={paymentMethodData} />
-            </div>
-            <PaymentDelayChart data={paymentDelayData} />
-          </div>
-        )}
-
-        {activeTab === 'alerts' && (
-          <FinancialAlerts invoices={invoices || []} />
+      {/* Analyses de paiement */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PaymentStatusChart data={paymentStatusData} />
+        {paymentMethodData.length > 0 && (
+          <PaymentMethodChart data={paymentMethodData} />
         )}
       </div>
+
+      {/* Retards de paiement */}
+      {paymentDelayData.length > 0 && (
+        <PaymentDelayChart data={paymentDelayData} />
+      )}
+
+      {/* Alertes financières */}
+      <FinancialAlerts invoices={invoices || []} />
     </div>
   );
 };
