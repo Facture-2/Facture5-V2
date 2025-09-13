@@ -51,11 +51,11 @@ export default function PaymentDelayChart({ data }: PaymentDelayChartProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Analyse des Retards de Paiement</h3>
-          <p className="text-sm text-gray-600">Clients avec les plus gros retards (jours)</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Analyse des Retards de Paiement</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Clients avec les plus gros retards (jours)</p>
         </div>
         <div className="flex items-center space-x-2 text-red-600">
           <AlertTriangle className="w-5 h-5" />
@@ -65,32 +65,32 @@ export default function PaymentDelayChart({ data }: PaymentDelayChartProps) {
 
       {/* Statistiques globales */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+        <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-700">
           <div className="flex items-center justify-center space-x-2 mb-2">
             <Clock className="w-5 h-5 text-red-600" />
             <span className="text-lg font-bold text-red-600">
               {averageDelay.toFixed(0)}
             </span>
           </div>
-          <p className="text-sm text-red-700">Jours de retard moyen</p>
+          <p className="text-sm text-red-700 dark:text-red-300">Jours de retard moyen</p>
         </div>
         
-        <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+        <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700">
           <div className="flex items-center justify-center space-x-2 mb-2">
             <TrendingDown className="w-5 h-5 text-orange-600" />
             <span className="text-lg font-bold text-orange-600">
               {totalDelayedAmount.toLocaleString()}
             </span>
           </div>
-          <p className="text-sm text-orange-700">MAD en retard</p>
+          <p className="text-sm text-orange-700 dark:text-orange-300">MAD en retard</p>
         </div>
         
-        <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+        <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-700">
           <div className="flex items-center justify-center space-x-2 mb-2">
             <Users className="w-5 h-5 text-yellow-600" />
             <span className="text-lg font-bold text-yellow-600">{validData.length}</span>
           </div>
-          <p className="text-sm text-yellow-700">Clients en retard</p>
+          <p className="text-sm text-yellow-700 dark:text-yellow-300">Clients en retard</p>
         </div>
       </div>
 
@@ -130,19 +130,19 @@ export default function PaymentDelayChart({ data }: PaymentDelayChartProps) {
 
           {/* Liste détaillée des clients en retard */}
           <div className="space-y-3">
-            <h4 className="font-medium text-gray-900">Clients à Surveiller</h4>
+            <h4 className="font-medium text-gray-900 dark:text-gray-100">Clients à Surveiller</h4>
             {validData.map((client, index) => {
               const risk = getRiskLevel(client.averageDelay);
               
               return (
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4 border-red-400">
+                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-red-400">
                   <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
                       <AlertTriangle className="w-5 h-5 text-red-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{client.clientName}</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{client.clientName}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         {client.invoicesCount} facture{client.invoicesCount > 1 ? 's' : ''} en retard
                       </p>
                     </div>
@@ -153,7 +153,7 @@ export default function PaymentDelayChart({ data }: PaymentDelayChartProps) {
                       <p className="text-lg font-bold text-red-600">
                         {Math.round(client.averageDelay)} jours
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         {client.totalAmount.toLocaleString()} MAD
                       </p>
                     </div>
@@ -167,9 +167,9 @@ export default function PaymentDelayChart({ data }: PaymentDelayChartProps) {
           </div>
 
           {/* Recommandations */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <h4 className="font-medium text-amber-900 mb-2">🎯 Recommandations</h4>
-            <ul className="text-sm text-amber-800 space-y-1">
+          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-4">
+            <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2">🎯 Recommandations</h4>
+            <ul className="text-sm text-amber-800 dark:text-amber-200 space-y-1">
               <li>• Contactez les clients avec plus de 30 jours de retard</li>
               <li>• Mettez en place des relances automatiques</li>
               <li>• Considérez des conditions de paiement plus strictes</li>
@@ -182,10 +182,10 @@ export default function PaymentDelayChart({ data }: PaymentDelayChartProps) {
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
             🎉 Excellent ! Aucun retard de paiement
           </h3>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-300">
             Tous vos clients paient dans les délais. Continuez ainsi !
           </p>
         </div>

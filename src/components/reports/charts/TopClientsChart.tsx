@@ -74,21 +74,21 @@ export default function TopClientsChart({ data }: TopClientsChartProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Top 10 Clients</h3>
-          <p className="text-sm text-gray-600">Classement par chiffre d'affaires</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Top 10 Clients</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Classement par chiffre d'affaires</p>
         </div>
         
         {/* Toggle view mode */}
-        <div className="flex bg-gray-100 rounded-lg p-1">
+        <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
           <button
             onClick={() => setViewMode('total')}
             className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
               viewMode === 'total' 
-                ? 'bg-white text-blue-600 shadow-sm' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
             Total
@@ -97,8 +97,8 @@ export default function TopClientsChart({ data }: TopClientsChartProps) {
             onClick={() => setViewMode('paid')}
             className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
               viewMode === 'paid' 
-                ? 'bg-white text-green-600 shadow-sm' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white dark:bg-gray-600 text-green-600 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
             Payé
@@ -107,8 +107,8 @@ export default function TopClientsChart({ data }: TopClientsChartProps) {
             onClick={() => setViewMode('unpaid')}
             className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
               viewMode === 'unpaid' 
-                ? 'bg-white text-red-600 shadow-sm' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white dark:bg-gray-600 text-red-600 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
             }`}
           >
             Non payé
@@ -118,17 +118,17 @@ export default function TopClientsChart({ data }: TopClientsChartProps) {
 
       {/* Statistiques globales */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
           <div className="text-lg font-bold text-blue-600">{totalRevenue.toLocaleString()}</div>
-          <div className="text-xs text-blue-700">MAD Total</div>
+          <div className="text-xs text-blue-700 dark:text-blue-300">MAD Total</div>
         </div>
-        <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+        <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
           <div className="text-lg font-bold text-green-600">{totalPaid.toLocaleString()}</div>
-          <div className="text-xs text-green-700">MAD Payé</div>
+          <div className="text-xs text-green-700 dark:text-green-300">MAD Payé</div>
         </div>
-        <div className="text-center p-3 bg-red-50 rounded-lg border border-red-200">
+        <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-700">
           <div className="text-lg font-bold text-red-600">{totalUnpaid.toLocaleString()}</div>
-          <div className="text-xs text-red-700">MAD Non payé</div>
+          <div className="text-xs text-red-700 dark:text-red-300">MAD Non payé</div>
         </div>
       </div>
 
@@ -166,13 +166,13 @@ export default function TopClientsChart({ data }: TopClientsChartProps) {
 
       {/* Analyse des clients */}
       <div className="mt-6 space-y-3">
-        <h4 className="font-medium text-gray-900">Analyse des Clients</h4>
+        <h4 className="font-medium text-gray-900 dark:text-gray-100">Analyse des Clients</h4>
         {data.slice(0, 3).map((client, index) => {
           const paymentRate = client.totalAmount > 0 ? (client.paidAmount / client.totalAmount) * 100 : 0;
           const isGoodPayer = paymentRate >= 80;
           
           return (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm ${
                   index === 0 ? 'bg-yellow-500' : 
@@ -181,8 +181,8 @@ export default function TopClientsChart({ data }: TopClientsChartProps) {
                   {index === 0 ? <Crown className="w-4 h-4" /> : `#${index + 1}`}
                 </div>
                 <div>
-                  <p className="font-medium text-gray-900">{client.name}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{client.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {client.invoicesCount} factures • {paymentRate.toFixed(1)}% payé
                   </p>
                 </div>
@@ -190,10 +190,10 @@ export default function TopClientsChart({ data }: TopClientsChartProps) {
               
               <div className="flex items-center space-x-3">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     {client.totalAmount.toLocaleString()} MAD
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {client.unpaidAmount > 0 ? `${client.unpaidAmount.toLocaleString()} MAD en attente` : 'Tout payé'}
                   </p>
                 </div>
