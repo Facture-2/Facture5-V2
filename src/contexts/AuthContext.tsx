@@ -366,6 +366,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
+      // Vérifier que le provider est correctement configuré
+      googleProvider.setCustomParameters({
+        prompt: 'select_account',
+        client_id: '15503201564-9lrkl5g474vjkklo0o0pma02bp4s9si3.apps.googleusercontent.com'
+      });
+      
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       
@@ -417,6 +423,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerWithGoogle = async (companyData: Company): Promise<boolean> => {
     try {
+      // Configurer le provider pour l'inscription
+      googleProvider.setCustomParameters({
+        prompt: 'select_account',
+        client_id: '15503201564-9lrkl5g474vjkklo0o0pma02bp4s9si3.apps.googleusercontent.com'
+      });
+      
       const result = await signInWithPopup(auth, googleProvider);
       const firebaseUser = result.user;
       
