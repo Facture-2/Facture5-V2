@@ -4,7 +4,6 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
@@ -44,7 +43,7 @@ interface User {
   email: string;
   role: 'admin' | 'user';
   isAdmin: boolean;
-  entrepriseId?: string; // ID de l'entreprise pour les utilisateurs gérés
+  entrepriseId?: string;
   permissions?: {
     dashboard: boolean;
     invoices: boolean;
@@ -136,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   };
 
-  // Fonction pour vérifier si un utilisateur géré existe
+  // Vérification utilisateur géré
   const checkManagedUser = async (email: string, password: string): Promise<ManagedUser | null> => {
     try {
       const managedUsersQuery = query(
@@ -167,7 +166,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const expiryDate = new Date(userData.expiryDate);
       
       if (currentDate > expiryDate) {
-        // L'abonnement a expiré, repasser en version gratuite
         try {
           await updateDoc(doc(db, 'entreprises', userId), {
             subscription: 'free',
@@ -176,7 +174,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             updatedAt: new Date().toISOString()
           });
           
-          // Mettre à jour l'état local
           setUser(prevUser => {
             if (prevUser) {
               return {
@@ -192,10 +189,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return prevUser;
           });
           
-          // Préparer l'alerte d'expiration
           setExpiredDate(userData.expiryDate);
           setShowExpiryAlert(true);
-          
         } catch (error) {
           console.error('Erreur lors de la mise à jour de l\'expiration:', error);
         }
@@ -207,7 +202,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setFirebaseUser(firebaseUser);
-        // Récupérer les données utilisateur depuis Firestore
         try {
           const userDoc = await getDoc(doc(db, 'entreprises', firebaseUser.uid));
           if (userDoc.exists()) {
@@ -218,7 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               email: firebaseUser.email || '',
               role: 'admin',
               isAdmin: true,
-              entrepriseId: firebaseUser.uid, // ✅ placé ici correctement
+              entrepriseId: firebaseUser.uid,
               company: {
                 name: userData.name,
                 ice: userData.ice,
@@ -243,11 +237,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
             });
 
-            // Calculer le statut de l'abonnement
             const status = calculateSubscriptionStatus(userData);
             setSubscriptionStatus(status);
-            
-            // Vérifier l'expiration de l'abonnement à chaque connexion
             await checkSubscriptionExpiry(firebaseUser.uid, userData);
           }
         } catch (error) {
@@ -265,9 +256,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // Vérifier si c'est l'admin de facture.ma
       if (email === 'admin@facture.ma' && password === 'Rahma1211?') {
-        // Créer un utilisateur admin spécial
         setUser({
           id: 'facture-admin',
           name: 'Administrateur Facture.ma',
@@ -291,29 +280,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return true;
       }
 
-      // D'abord, vérifier si c'est un utilisateur géré
       const managedUser = await checkManagedUser(email, password);
-      
       if (managedUser) {
-        // C'est un utilisateur géré, récupérer les données de l'entreprise
         const companyDoc = await getDoc(doc(db, 'entreprises', managedUser.entrepriseId));
         if (companyDoc.exists()) {
           const companyData = companyDoc.data();
-          
-          // Vérifier le statut de l'abonnement de l'entreprise
           const status = calculateSubscriptionStatus(companyData);
-          
-          // Si l'abonnement est expiré ou si l'entreprise n'est plus en Pro, bloquer la connexion des utilisateurs gérés
           if (status.shouldBlockUsers || (companyData.subscription !== 'pro')) {
             throw new Error('ACCOUNT_BLOCKED_EXPIRED');
           }
-          
-          // Mettre à jour la dernière connexion
           await updateDoc(doc(db, 'managedUsers', managedUser.id), {
             lastLogin: new Date().toISOString()
           });
-          
-          // Créer l'objet utilisateur avec les permissions
           setUser({
             id: managedUser.id,
             name: managedUser.name,
@@ -321,7 +299,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             role: 'user',
             isAdmin: false,
             permissions: managedUser.permissions,
-            // Utiliser l'ID de l'entreprise pour accéder aux données partagées
             entrepriseId: managedUser.entrepriseId,
             company: {
               name: companyData.name,
@@ -346,16 +323,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               expiryDate: companyData.expiryDate
             }
           });
-          
-          // Mettre à jour le statut de l'abonnement
           setSubscriptionStatus(status);
-          
           return true;
         }
         return false;
       }
 
-      // Sinon, essayer la connexion Firebase normale (admin)
       await signInWithEmailAndPassword(auth, email, password);
       return true;
     } catch (error) {
@@ -368,12 +341,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const firebaseUser = result.user;
-      
-      // Vérifier si l'utilisateur existe déjà dans notre base d'entreprises
+
       const userDoc = await getDoc(doc(db, 'entreprises', firebaseUser.uid));
-      
       if (!userDoc.exists()) {
-        // Nouvel utilisateur Google, créer automatiquement un document entreprise minimal
         const defaultCompanyData = {
           name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Mon Entreprise',
           ice: '',
@@ -395,25 +365,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
-        
         await setDoc(doc(db, 'entreprises', firebaseUser.uid), defaultCompanyData);
-        
-        // L'utilisateur sera automatiquement connecté grâce au listener onAuthStateChanged
       }
-      
+
       return true;
-    } catch (popupError: any) {
-      if (popupError.code === 'auth/popup-blocked') {
-        // Fallback to redirect method when popup is blocked
-        await signInWithRedirect(auth, googleProvider);
-        return false; // Don't set loading to false as redirect will happen
-      }
-      throw popupError; // Re-throw other errors
-    } catch (error) {
-      console.error('Erreur de connexion Google:', error);
+    } catch (error: any) {
       if (error.code === 'auth/popup-blocked') {
-        throw new Error('Les popups sont bloqués par votre navigateur. Veuillez autoriser les popups pour ce site ou essayer de vous connecter à nouveau.');
+        await signInWithRedirect(auth, googleProvider);
+        return false;
       }
+      console.error('Erreur de connexion Google:', error);
       throw error;
     }
   };
@@ -422,8 +383,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const firebaseUser = result.user;
-      
-      // Sauvegarder les données de l'entreprise dans Firestore
+
       await setDoc(doc(db, 'entreprises', firebaseUser.uid), {
         ...companyData,
         ownerEmail: firebaseUser.email,
@@ -447,11 +407,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const userId = userCredential.user.uid;
-
-      // Envoyer l'email de vérification
       await sendEmailVerification(userCredential.user);
 
-      // Sauvegarder les données de l'entreprise dans Firestore
       await setDoc(doc(db, 'entreprises', userId), {
         ...companyData,
         ownerEmail: email,
@@ -472,10 +429,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const sendEmailVerificationManual = async (): Promise<void> => {
-    if (!firebaseUser) {
-      throw new Error('Aucun utilisateur connecté');
-    }
-    
+    if (!firebaseUser) throw new Error('Aucun utilisateur connecté');
     try {
       await sendEmailVerification(firebaseUser);
     } catch (error) {
@@ -492,23 +446,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
   };
-  
+
   const upgradeSubscription = async (): Promise<void> => {
     if (!user) return;
-    
     try {
       const currentDate = new Date();
       const expiryDate = new Date();
-      expiryDate.setDate(currentDate.getDate() + 30); // 30 jours à partir d'aujourd'hui
-      
+      expiryDate.setDate(currentDate.getDate() + 30);
       await updateDoc(doc(db, 'entreprises', user.id), {
         subscription: 'pro',
         subscriptionDate: currentDate.toISOString(),
         expiryDate: expiryDate.toISOString(),
         updatedAt: new Date().toISOString()
       });
-      
-      // Mettre à jour l'état local
       setUser(prevUser => {
         if (prevUser) {
           return {
@@ -523,7 +473,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return prevUser;
       });
-      
     } catch (error) {
       console.error('Erreur lors de la mise à niveau:', error);
       throw error;
@@ -532,14 +481,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const updateCompanySettings = async (settings: Partial<Company>): Promise<void> => {
     if (!user) return;
-    
     try {
       await updateDoc(doc(db, 'entreprises', user.id), {
         ...settings,
         updatedAt: new Date().toISOString()
       });
-      
-      // Mettre à jour l'état local immédiatement
       setUser(prevUser => {
         if (prevUser) {
           return {
@@ -552,7 +498,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return prevUser;
       });
-      
     } catch (error) {
       console.error('Erreur lors de la mise à jour des paramètres:', error);
       throw error;
@@ -561,7 +506,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkSubscriptionExpiryManual = async (): Promise<void> => {
     if (!user) return;
-    
     try {
       const userDoc = await getDoc(doc(db, 'entreprises', user.id));
       if (userDoc.exists()) {
@@ -575,13 +519,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async (): Promise<void> => {
     try {
-      // Vérifier si c'est un utilisateur géré (pas connecté via Firebase)
       if (user && !user.isAdmin) {
-        // Pour les utilisateurs gérés, simplement nettoyer l'état local
         setUser(null);
         setFirebaseUser(null);
       } else {
-        // Pour les admins, déconnexion Firebase normale
         await signOut(auth);
       }
     } catch (error) {
