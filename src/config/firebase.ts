@@ -24,12 +24,7 @@ export const googleProvider = new GoogleAuthProvider();
 
 // Configuration du provider Google
 googleProvider.setCustomParameters({
-  prompt: 'select_account',
-  client_id: '15503201564-9lrkl5g474vjkklo0o0pma02bp4s9si3.apps.googleusercontent.com'
+  prompt: 'select_account'
 });
-
-// Configurer les scopes nécessaires
-googleProvider.addScope('email');
-googleProvider.addScope('profile');
 
 export default app;
