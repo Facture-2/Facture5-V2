@@ -271,26 +271,8 @@ function RegisterForm({ onBack }: { onBack: () => void }) {
     }
 
     try {
-      const companyData = {
-        name: formData.companyName,
-        ice: formData.ice,
-        if: formData.if,
-        rc: formData.rc,
-        cnss: formData.cnss,
-        phone: formData.phone,
-        address: formData.address,
-        logo: formData.logo,
-        email: formData.email,
-        patente: formData.patente,
-        website: formData.website
-      };
-
-      const success = await register(formData.email, formData.password, companyData);
-      if (success) {
-        setEmailSent(true);
-      } else {
-        setError('Erreur lors de la création du compte');
-      }
+      // Afficher directement le formulaire pour Google
+      setShowGoogleForm(true);
     } catch (err) {
       setError('Erreur lors de l\'inscription');
     } finally {
