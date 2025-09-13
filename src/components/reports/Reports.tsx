@@ -48,23 +48,50 @@ const Reports: React.FC = () => {
   const paymentStatusData = React.useMemo(() => {
     if (!invoices || invoices.length === 0) {
       return [
-        { name: 'Paid', value: 0, color: '#10B981' },
-        { name: 'Pending', value: 0, color: '#F59E0B' },
-        { name: 'Overdue', value: 0, color: '#EF4444' }
+        { name: 'Paid', value: 0, amount: 0, percentage: 0, color: '#10B981' },
+        { name: 'Pending', value: 0, amount: 0, percentage: 0, color: '#F59E0B' },
+        { name: 'Overdue', value: 0, amount: 0, percentage: 0, color: '#EF4444' }
       ];
     }
 
-    const statusCounts = invoices.reduce((acc: any, invoice: any) => {
+    const statusStats = invoices.reduce((acc: any, invoice: any) => {
       const status = invoice.status || 'pending';
-      acc[status] = (acc[status] || 0) + 1;
+      if (!acc[status]) {
+        acc[status] = { count: 0, amount: 0 };
+      }
+      acc[status].count += 1;
+      acc[status].amount += parseFloat(invoice.total) || 0;
       return acc;
     }, {});
 
-    return [
-      { name: 'Paid', value: statusCounts.paid || 0, color: '#10B981' },
-      { name: 'Pending', value: statusCounts.pending || 0, color: '#F59E0B' },
-      { name: 'Overdue', value: statusCounts.overdue || 0, color: '#EF4444' }
+    const totalAmount = Object.values(statusStats).reduce((sum: number, stat: any) => sum + stat.amount, 0);
+    
+    const data = [
+      { 
+        name: 'Paid', 
+        value: statusStats.paid?.count || 0, 
+        amount: statusStats.paid?.amount || 0,
+        color: '#10B981' 
+      },
+      { 
+        name: 'Pending', 
+        value: statusStats.pending?.count || 0, 
+        amount: statusStats.pending?.amount || 0,
+        color: '#F59E0B' 
+      },
+      { 
+        name: 'Overdue', 
+        value: statusStats.overdue?.count || 0, 
+        amount: statusStats.overdue?.amount || 0,
+        color: '#EF4444' 
+      }
     ];
+
+    // Calculate percentages
+    return data.map(item => ({
+      ...item,
+      percentage: totalAmount > 0 ? (item.amount / totalAmount) * 100 : 0
+    }));
   }, [invoices]);
 
   // Prepare payment method data
@@ -79,12 +106,39 @@ const Reports: React.FC = () => {
 
   // Prepare payment delay data
   const paymentDelayData = React.useMemo(() => {
-    const ranges = ['0-30 days', '31-60 days', '61-90 days', '90+ days'];
-    return ranges.map(range => ({
-      range,
-      count: Math.floor(Math.random() * 20) + 5,
-      amount: Math.floor(Math.random() * 50000) + 10000
-    }));
+    if (!invoices || invoices.length === 0) return [];
+    
+    // Filter overdue invoices and group by client
+    const overdueInvoices = invoices.filter((invoice: any) => invoice.status === 'overdue');
+    
+    const clientDelayStats = overdueInvoices.reduce((acc: any, invoice: any) => {
+      const clientName = invoice.clientName || 'Unknown Client';
+      const amount = parseFloat(invoice.total) || 0;
+      const dueDate = new Date(invoice.dueDate);
+      const currentDate = new Date();
+      const delayDays = Math.max(0, Math.floor((currentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
+      
+      if (!acc[clientName]) {
+        acc[clientName] = {
+          client: clientName,
+          totalAmount: 0,
+          averageDelay: 0,
+          invoiceCount: 0,
+          totalDelay: 0
+        };
+      }
+      
+      acc[clientName].totalAmount += amount;
+      acc[clientName].invoiceCount += 1;
+      acc[clientName].totalDelay += delayDays;
+      acc[clientName].averageDelay = acc[clientName].totalDelay / acc[clientName].invoiceCount;
+      
+      return acc;
+    }, {});
+    
+    return Object.values(clientDelayStats)
+      .sort((a: any, b: any) => b.totalAmount - a.totalAmount)
+      .slice(0, 10);
   }, []);
 
   // Calculate top clients data from invoices
