@@ -96,14 +96,56 @@ const Reports: React.FC = () => {
 
   // Prepare payment method data
   const paymentMethodData = React.useMemo(() => {
-    return [
-      { name: 'Bank Transfer', value: 45, color: '#3B82F6' },
-      { name: 'Credit Card', value: 30, color: '#10B981' },
-      { name: 'Cash', value: 15, color: '#F59E0B' },
-      { name: 'Check', value: 10, color: '#8B5CF6' }
-    ];
-  }, []);
+    if (!invoices || invoices.length === 0) {
+      return [
+        { name: 'Virement', value: 0, count: 0, percentage: 0 },
+        { name: 'Espèces', value: 0, count: 0, percentage: 0 },
+        { name: 'Chèque', value: 0, count: 0, percentage: 0 },
+        { name: 'Effet', value: 0, count: 0, percentage: 0 }
+      ];
+    }
 
+    const methodStats = invoices.reduce((acc: any, invoice: any) => {
+      const method = invoice.paymentMethod || 'Virement';
+      if (!acc[method]) {
+        acc[method] = { count: 0, amount: 0 };
+      }
+      acc[method].count += 1;
+      acc[method].amount += parseFloat(invoice.total) || 0;
+      return acc;
+    }, {});
+
+    const totalAmount = Object.values(methodStats).reduce((sum: number, stat: any) => sum + stat.amount, 0);
+    
+    const data = [
+      { 
+        name: 'Virement', 
+        value: methodStats.Virement?.amount || 0, 
+        count: methodStats.Virement?.count || 0,
+        percentage: totalAmount > 0 ? ((methodStats.Virement?.amount || 0) / totalAmount) * 100 : 0
+      },
+      { 
+        name: 'Espèces', 
+        value: methodStats.Espèces?.amount || 0, 
+        count: methodStats.Espèces?.count || 0,
+        percentage: totalAmount > 0 ? ((methodStats.Espèces?.amount || 0) / totalAmount) * 100 : 0
+      },
+      { 
+        name: 'Chèque', 
+        value: methodStats.Chèque?.amount || 0, 
+        count: methodStats.Chèque?.count || 0,
+        percentage: totalAmount > 0 ? ((methodStats.Chèque?.amount || 0) / totalAmount) * 100 : 0
+      },
+      { 
+        name: 'Effet', 
+        value: methodStats.Effet?.amount || 0, 
+        count: methodStats.Effet?.count || 0,
+        percentage: totalAmount > 0 ? ((methodStats.Effet?.amount || 0) / totalAmount) * 100 : 0
+      }
+    ];
+
+    return data.filter(item => item.value > 0 || item.count > 0);
+  }, [invoices]);
   // Prepare payment delay data
   const paymentDelayData = React.useMemo(() => {
     if (!invoices || invoices.length === 0) return [];
