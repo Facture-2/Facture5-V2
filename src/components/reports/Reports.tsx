@@ -221,7 +221,7 @@ const Reports: React.FC = () => {
         )}
 
         {activeTab === 'alerts' && (
-          <FinancialAlerts />
+          <FinancialAlerts invoices={invoices || []} />
         )}
       </div>
     </div>
