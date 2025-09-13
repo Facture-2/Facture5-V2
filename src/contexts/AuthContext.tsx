@@ -3,6 +3,8 @@ import {
   User as FirebaseUser,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
@@ -210,36 +212,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const userDoc = await getDoc(doc(db, 'entreprises', firebaseUser.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data();
-       setUser({
-  id: firebaseUser.uid,
-  name: userData.ownerName || firebaseUser.email?.split('@')[0] || 'Utilisateur',
-  email: firebaseUser.email || '',
-  role: 'admin',
-  isAdmin: true,
-  entrepriseId: firebaseUser.uid, // ✅ placé ici correctement
-  company: {
-    name: userData.name,
-    ice: userData.ice,
-    if: userData.if,
-    rc: userData.rc,
-    cnss: userData.cnss,
-    address: userData.address,
-    phone: userData.phone,
-    logo: userData.logo,
-    email: userData.email,
-    signature: userData.signature || "",
-    patente: userData.patente,
-    website: userData.website,
-    invoiceNumberingFormat: userData.invoiceNumberingFormat,
-    invoicePrefix: userData.invoicePrefix,
-    invoiceCounter: userData.invoiceCounter,
-    lastInvoiceYear: userData.lastInvoiceYear,
-    defaultTemplate: userData.defaultTemplate || 'template1',
-    subscription: userData.subscription || 'free',
-    subscriptionDate: userData.subscriptionDate,
-    expiryDate: userData.expiryDate
-  }
-});
+            setUser({
+              id: firebaseUser.uid,
+              name: userData.ownerName || firebaseUser.email?.split('@')[0] || 'Utilisateur',
+              email: firebaseUser.email || '',
+              role: 'admin',
+              isAdmin: true,
+              entrepriseId: firebaseUser.uid, // ✅ placé ici correctement
+              company: {
+                name: userData.name,
+                ice: userData.ice,
+                if: userData.if,
+                rc: userData.rc,
+                cnss: userData.cnss,
+                address: userData.address,
+                phone: userData.phone,
+                logo: userData.logo,
+                email: userData.email,
+                signature: userData.signature || "",
+                patente: userData.patente,
+                website: userData.website,
+                invoiceNumberingFormat: userData.invoiceNumberingFormat,
+                invoicePrefix: userData.invoicePrefix,
+                invoiceCounter: userData.invoiceCounter,
+                lastInvoiceYear: userData.lastInvoiceYear,
+                defaultTemplate: userData.defaultTemplate || 'template1',
+                subscription: userData.subscription || 'free',
+                subscriptionDate: userData.subscriptionDate,
+                expiryDate: userData.expiryDate
+              }
+            });
 
             // Calculer le statut de l'abonnement
             const status = calculateSubscriptionStatus(userData);
@@ -365,6 +367,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      
+      // Check if user exists in Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      
+      if (!userDoc.exists()) {
+        // Create new user document
+        await setDoc(doc(db, 'users', user.uid), {
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          role: 'user',
+          createdAt: new Date(),
+          isActive: true,
+          companyId: null
+        });
+      }
+    } catch (popupError: any) {
+      if (popupError.code === 'auth/popup-blocked') {
+        // Fallback to redirect method when popup is blocked
+        await signInWithRedirect(auth, googleProvider);
+        return false; // Don't set loading to false as redirect will happen
+      }
+      throw popupError; // Re-throw other errors
+    }
+    
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
       const firebaseUser = result.user;
       
       // Vérifier si l'utilisateur existe déjà dans notre base
@@ -459,6 +489,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw error;
     }
   };
+  
   const upgradeSubscription = async (): Promise<void> => {
     if (!user) return;
     
