@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { 
   User as FirebaseUser,
   signInWithEmailAndPassword,
+  signInWithPopup,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
@@ -9,7 +10,7 @@ import {
   onAuthStateChanged
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, query, collection, where, getDocs } from 'firebase/firestore';
-import { auth, db } from '../config/firebase';
+import { auth, db, googleProvider } from '../config/firebase';
 import { ManagedUser } from './UserManagementContext';
 
 interface Company {
@@ -64,7 +65,9 @@ interface AuthContextType {
   firebaseUser: FirebaseUser | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
+  loginWithGoogle: () => Promise<boolean>;
   register: (email: string, password: string, companyData: Company) => Promise<boolean>;
+  registerWithGoogle: (companyData: Company) => Promise<boolean>;
   sendEmailVerification: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -362,6 +365,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (): Promise<boolean> => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const firebaseUser = result.user;
+      
+      // Vérifier si l'utilisateur existe déjà dans notre base
+      const userDoc = await getDoc(doc(db, 'entreprises', firebaseUser.uid));
+      
+      if (!userDoc.exists()) {
+        // Nouvel utilisateur Google, rediriger vers la création d'entreprise
+        return false; // Indique qu'il faut compléter l'inscription
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Erreur de connexion Google:', error);
+      return false;
+    }
+  };
+
+  const registerWithGoogle = async (companyData: Company): Promise<boolean> => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const firebaseUser = result.user;
+      
+      // Sauvegarder les données de l'entreprise dans Firestore
+      await setDoc(doc(db, 'entreprises', firebaseUser.uid), {
+        ...companyData,
+        ownerEmail: firebaseUser.email,
+        ownerName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Utilisateur',
+        emailVerified: firebaseUser.emailVerified,
+        subscription: 'free',
+        subscriptionDate: new Date().toISOString(),
+        expiryDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Erreur lors de l\'inscription Google:', error);
+      return false;
+    }
+  };
+
   const register = async (email: string, password: string, companyData: Company): Promise<boolean> => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -512,7 +560,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     firebaseUser,
     isAuthenticated: !!user,
     login,
+    loginWithGoogle,
     register,
+    registerWithGoogle,
     sendEmailVerification: sendEmailVerificationManual,
     sendPasswordReset,
     logout,

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Building2, Lock, Mail, ArrowLeft, UserPlus, AlertCircle, CheckCircle } from 'lucide-react';
+import { Building2, Lock, Mail, ArrowLeft, UserPlus, AlertCircle, CheckCircle, Chrome } from 'lucide-react';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 
@@ -15,7 +15,7 @@ export default function Login() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const { language, setLanguage, t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,6 +34,22 @@ export default function Login() {
       } else {
         setError('Erreur de connexion');
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const success = await loginWithGoogle();
+      if (!success) {
+        setError('Erreur de connexion avec Google');
+      }
+    } catch (err: any) {
+      setError('Erreur de connexion avec Google');
     } finally {
       setIsLoading(false);
     }
@@ -154,6 +170,25 @@ export default function Login() {
             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             {isLoading ? t('loading') : t('login')}
+          </button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">ou</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={isLoading}
+            className="group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          >
+            <Chrome className="w-5 h-5 mr-2 text-red-500" />
+            Continuer avec Google
           </button>
 
           <div className="text-center">
