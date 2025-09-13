@@ -367,23 +367,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      const user = result.user;
+      const firebaseUser = result.user;
       
-      // Check if user exists in Firestore
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      // Vérifier si l'utilisateur existe déjà dans notre base d'entreprises
+      const userDoc = await getDoc(doc(db, 'entreprises', firebaseUser.uid));
       
       if (!userDoc.exists()) {
-        // Create new user document
-        await setDoc(doc(db, 'users', user.uid), {
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          role: 'user',
-          createdAt: new Date(),
-          isActive: true,
-          companyId: null
-        });
+        // Nouvel utilisateur Google, créer automatiquement un document entreprise minimal
+        const defaultCompanyData = {
+          name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Mon Entreprise',
+          ice: '',
+          if: '',
+          rc: '',
+          cnss: '',
+          address: '',
+          phone: '',
+          email: firebaseUser.email || '',
+          patente: '',
+          website: '',
+          logo: firebaseUser.photoURL || '',
+          ownerEmail: firebaseUser.email,
+          ownerName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'Utilisateur',
+          emailVerified: firebaseUser.emailVerified,
+          subscription: 'free',
+          subscriptionDate: new Date().toISOString(),
+          expiryDate: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        await setDoc(doc(db, 'entreprises', firebaseUser.uid), defaultCompanyData);
+        
+        // L'utilisateur sera automatiquement connecté grâce au listener onAuthStateChanged
       }
+      
+      return true;
     } catch (popupError: any) {
       if (popupError.code === 'auth/popup-blocked') {
         // Fallback to redirect method when popup is blocked
@@ -391,21 +409,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false; // Don't set loading to false as redirect will happen
       }
       throw popupError; // Re-throw other errors
-    }
-    
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const firebaseUser = result.user;
-      
-      // Vérifier si l'utilisateur existe déjà dans notre base
-      const userDoc = await getDoc(doc(db, 'entreprises', firebaseUser.uid));
-      
-      if (!userDoc.exists()) {
-        // Nouvel utilisateur Google, rediriger vers la création d'entreprise
-        return false; // Indique qu'il faut compléter l'inscription
-      }
-      
-      return true;
     } catch (error) {
       console.error('Erreur de connexion Google:', error);
       if (error.code === 'auth/popup-blocked') {

@@ -45,9 +45,7 @@ export default function Login() {
 
     try {
       const success = await loginWithGoogle();
-      if (!success) {
-        setError('Erreur de connexion avec Google');
-      }
+      // La connexion Google gère maintenant automatiquement la création du compte
     } catch (err: any) {
       if (err.message && err.message.includes('popup')) {
         setError(err.message);
