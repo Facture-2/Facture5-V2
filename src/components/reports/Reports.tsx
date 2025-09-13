@@ -497,7 +497,7 @@ export default function Reports() {
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               {periods.map(period => (
                 <option key={period.id} value={period.id}>{period.label}</option>
@@ -513,7 +513,7 @@ export default function Reports() {
             <select
               value={selectedClient}
               onChange={(e) => setSelectedClient(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               <option value="all">Tous les clients</option>
               {clients.map(client => (
@@ -530,7 +530,7 @@ export default function Reports() {
             <select
               value={selectedProduct}
               onChange={(e) => setSelectedProduct(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               <option value="all">Tous les produits</option>
               {products.map(product => (
@@ -547,7 +547,7 @@ export default function Reports() {
             <select
               value={selectedPaymentMethod}
               onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               <option value="all">Tous les modes</option>
               <option value="virement">Virement</option>
@@ -565,7 +565,7 @@ export default function Reports() {
                 setSelectedPaymentMethod('all');
                 setSelectedPeriod('month');
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               Réinitialiser
             </button>
@@ -573,13 +573,13 @@ export default function Reports() {
         </div>
 
         {compareMode && (
-          <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+          <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg">
             <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-purple-900">Mode Comparaison:</span>
+              <span className="text-sm font-medium text-purple-900 dark:text-purple-100">Mode Comparaison:</span>
               <select
                 value={comparePeriod}
                 onChange={(e) => setComparePeriod(e.target.value)}
-                className="px-3 py-1 border border-purple-300 rounded text-sm"
+                className="px-3 py-1 border border-purple-300 dark:border-purple-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="previous">Période précédente</option>
                 <option value="lastYear">Même période année dernière</option>
@@ -590,8 +590,8 @@ export default function Reports() {
       </div>
 
       {/* Navigation par onglets */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -602,7 +602,7 @@ export default function Reports() {
                   className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -661,77 +661,77 @@ export default function Reports() {
           
           {/* Analyse de performance */}
           {filteredInvoices.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Analyse de Performance</h3>
-                  <p className="text-sm text-gray-600">Indicateurs clés pour {getPeriodLabel()}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Analyse de Performance</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Indicateurs clés pour {getPeriodLabel()}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg border border-emerald-200">
+                <div className="text-center p-4 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg border border-emerald-200 dark:border-emerald-700">
                   <div className="flex items-center justify-center space-x-2 mb-2">
                     <CheckCircle className="w-5 h-5 text-emerald-600" />
                     <p className="text-lg font-bold text-emerald-600">
                       {filteredInvoices.length > 0 ? Math.round((totalRevenue / totalAllInvoices) * 100) : 0}%
                     </p>
                   </div>
-                  <p className="text-sm text-emerald-700">Taux de recouvrement</p>
-                  <p className="text-xs text-gray-500">Factures payées / Total</p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-300">Taux de recouvrement</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Factures payées / Total</p>
                 </div>
                 
-                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
                   <div className="flex items-center justify-center space-x-2 mb-2">
                     <DollarSign className="w-5 h-5 text-blue-600" />
                     <p className="text-lg font-bold text-blue-600">
                       {filteredInvoices.length > 0 ? Math.round(totalAllInvoices / filteredInvoices.length).toLocaleString() : '0'}
                     </p>
                   </div>
-                  <p className="text-sm text-blue-700">Panier moyen</p>
-                  <p className="text-xs text-gray-500">MAD par facture</p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">Panier moyen</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">MAD par facture</p>
                 </div>
                 
-                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg border border-purple-200">
+                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
                   <div className="flex items-center justify-center space-x-2 mb-2">
                     <TrendingUp className="w-5 h-5 text-purple-600" />
                     <p className="text-lg font-bold text-purple-600">
                       {revenueEvolutionData.length > 1 ? 
-                        Math.round(revenueEvolutionData.reduce((acc, d) => acc + d.currentYear, 0) / revenueEvolutionData.length).toLocaleString() : 
-                        '0'
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Alertes et Recommandations</h3>
                       }
                     </p>
                   </div>
-                  <p className="text-sm text-purple-700">Moyenne mensuelle</p>
-                  <p className="text-xs text-gray-500">MAD par mois</p>
+                  <p className="text-sm text-purple-700 dark:text-purple-300">Moyenne mensuelle</p>
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
                 </div>
               </div>
-            </div>
+                  <h4 className="font-semibold text-red-900 dark:text-red-100">Paiements en Attente</h4>
           )}
         </div>
       )}
 
-      {activeTab === 'cashflow' && (
-        <div className="space-y-6">
+                      <span className="text-red-800 dark:text-red-200">{supplier.name}</span>
+                      <span className="font-bold text-red-900 dark:text-red-100">{supplier.balance.toLocaleString()} MAD</span>
           <CashflowChart data={cashflowData} />
           
           {/* Résumé trésorerie */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Résumé Trésorerie</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Résumé Trésorerie</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
-                <p className="text-2xl font-bold text-green-600">{totalRevenue.toLocaleString()}</p>
-                <p className="text-sm text-green-700">Encaissé (MAD)</p>
+              <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+                <p className="text-sm text-green-700 dark:text-green-300">Encaissé (MAD)</p>
               </div>
-              <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                <h4 className="font-semibold text-green-900 dark:text-green-100">Fournisseurs Fiables</h4>
                 <p className="text-2xl font-bold text-red-600">{unpaidRevenue.toLocaleString()}</p>
-                <p className="text-sm text-red-700">À encaisser (MAD)</p>
+                <p className="text-sm text-red-700 dark:text-red-300">À encaisser (MAD)</p>
               </div>
-              <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-2xl font-bold text-blue-600">
-                  {cashflowData.reduce((sum, item) => sum + item.expectedRevenue, 0).toLocaleString()}
+              <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                    <span className="text-green-800 dark:text-green-200">{supplier.name}</span>
+                    <span className="font-bold text-green-900 dark:text-green-100">✅ À jour</span>
                 </p>
-                <p className="text-sm text-blue-700">Prévisionnel 6 mois</p>
+                <p className="text-sm text-blue-700 dark:text-blue-300">Prévisionnel 6 mois</p>
               </div>
             </div>
           </div>

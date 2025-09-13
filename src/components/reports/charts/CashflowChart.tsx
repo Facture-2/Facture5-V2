@@ -35,11 +35,11 @@ export default function CashflowChart({ data }: CashflowChartProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Prévisionnel de Trésorerie</h3>
-          <p className="text-sm text-gray-600">Encaissements attendus (6 prochains mois)</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Prévisionnel de Trésorerie</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Encaissements attendus (6 prochains mois)</p>
         </div>
         <div className="flex items-center space-x-2 text-green-600">
           <TrendingUp className="w-5 h-5" />
@@ -49,32 +49,32 @@ export default function CashflowChart({ data }: CashflowChartProps) {
 
       {/* Statistiques rapides */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+        <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
           <div className="flex items-center justify-center space-x-2 mb-2">
             <DollarSign className="w-5 h-5 text-green-600" />
             <span className="text-lg font-bold text-green-600">
               {totalExpected.toLocaleString()}
             </span>
           </div>
-          <p className="text-sm text-green-700">MAD Attendus</p>
+          <p className="text-sm text-green-700 dark:text-green-300">MAD Attendus</p>
         </div>
         
-        <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
           <div className="flex items-center justify-center space-x-2 mb-2">
             <Calendar className="w-5 h-5 text-blue-600" />
             <span className="text-lg font-bold text-blue-600">{totalInvoices}</span>
           </div>
-          <p className="text-sm text-blue-700">Factures en attente</p>
+          <p className="text-sm text-blue-700 dark:text-blue-300">Factures en attente</p>
         </div>
         
-        <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+        <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
           <div className="flex items-center justify-center space-x-2 mb-2">
             <TrendingUp className="w-5 h-5 text-purple-600" />
             <span className="text-lg font-bold text-purple-600">
               {totalInvoices > 0 ? (totalExpected / totalInvoices).toFixed(0) : '0'}
             </span>
           </div>
-          <p className="text-sm text-purple-700">MAD Moyen/facture</p>
+          <p className="text-sm text-purple-700 dark:text-purple-300">MAD/commande</p>
         </div>
       </div>
 

@@ -50,15 +50,15 @@ export default function PaymentMethodChart({ data }: PaymentMethodChartProps) {
   const totalCount = data.reduce((sum, item) => sum + item.count, 0);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Répartition par Mode de Paiement</h3>
-          <p className="text-sm text-gray-600">Analyse des moyens de paiement utilisés</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Répartition par Mode de Paiement</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Analyse des moyens de paiement utilisés</p>
         </div>
         <div className="text-right">
-          <div className="text-2xl font-bold text-gray-900">{totalAmount.toLocaleString()}</div>
-          <div className="text-sm text-gray-600">MAD Total</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{totalAmount.toLocaleString()}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">MAD Total</div>
         </div>
       </div>
 
@@ -87,19 +87,19 @@ export default function PaymentMethodChart({ data }: PaymentMethodChartProps) {
         {/* Détails par mode */}
         <div className="space-y-3">
           {data.map((item, index) => (
-            <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
               <div className="flex items-center space-x-3">
                 {getIcon(item.name)}
                 <div>
-                  <p className="font-medium text-gray-900">{item.name}</p>
-                  <p className="text-sm text-gray-600">{item.count} factures</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{item.name}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{item.count} factures</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-gray-900">
+                <p className="text-lg font-bold text-gray-900 dark:text-gray-100">
                   {item.value.toLocaleString()} MAD
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   {item.percentage.toFixed(1)}%
                 </p>
               </div>
@@ -109,22 +109,22 @@ export default function PaymentMethodChart({ data }: PaymentMethodChartProps) {
       </div>
 
       {/* Analyse des préférences */}
-      <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-        <h4 className="font-medium text-blue-900 mb-3">💡 Analyse des Préférences</h4>
+      <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+        <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-3">💡 Analyse des Préférences</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-blue-800">
+            <p className="text-blue-800 dark:text-blue-200">
               <strong>Mode préféré:</strong> {data.length > 0 ? data[0].name : 'N/A'}
             </p>
-            <p className="text-blue-700">
+            <p className="text-blue-700 dark:text-blue-300">
               {data.length > 0 ? `${data[0].percentage.toFixed(1)}% des paiements` : ''}
             </p>
           </div>
           <div>
-            <p className="text-blue-800">
+            <p className="text-blue-800 dark:text-blue-200">
               <strong>Montant moyen:</strong> {totalCount > 0 ? (totalAmount / totalCount).toFixed(0) : '0'} MAD
             </p>
-            <p className="text-blue-700">
+            <p className="text-blue-700 dark:text-blue-300">
               Par transaction
             </p>
           </div>

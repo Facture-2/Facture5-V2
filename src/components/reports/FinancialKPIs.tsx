@@ -136,11 +136,11 @@ export default function FinancialKPIs({ invoices }: FinancialKPIsProps) {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">KPIs Financiers</h3>
-          <p className="text-sm text-gray-600">Indicateurs clés de performance</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">KPIs Financiers</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Indicateurs clés de performance</p>
         </div>
         <div className="flex items-center space-x-2 text-blue-600">
           <Target className="w-5 h-5" />
@@ -153,20 +153,20 @@ export default function FinancialKPIs({ invoices }: FinancialKPIsProps) {
           const Icon = kpi.icon;
           
           return (
-            <div key={index} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+            <div key={index} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-md transition-all duration-200">
               <div className="flex items-center justify-between mb-3">
                 <div className={`w-10 h-10 bg-gradient-to-br ${kpi.bgColor} rounded-lg flex items-center justify-center`}>
                   <Icon className="w-5 h-5 text-white" />
                 </div>
-                <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 ${kpi.color} font-medium`}>
+                <span className={`text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 ${kpi.color} font-medium`}>
                   {kpi.trend}
                 </span>
               </div>
               
               <div>
-                <p className="text-sm font-medium text-gray-600 mb-1">{kpi.title}</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">{kpi.title}</p>
                 <p className={`text-xl font-bold ${kpi.color} mb-1`}>{kpi.value}</p>
-                <p className="text-xs text-gray-500">{kpi.subtitle}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{kpi.subtitle}</p>
               </div>
             </div>
           );
@@ -175,18 +175,18 @@ export default function FinancialKPIs({ invoices }: FinancialKPIsProps) {
 
       {/* Analyse des KPIs */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-          <h4 className="font-medium text-blue-900 mb-2">💡 Performance Globale</h4>
-          <div className="space-y-1 text-sm text-blue-800">
+        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+          <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">💡 Performance Globale</h4>
+          <div className="space-y-1 text-sm text-blue-800 dark:text-blue-200">
             <p>• DSO {dso <= 30 ? 'excellent' : dso <= 45 ? 'correct' : 'à améliorer'}</p>
             <p>• Recouvrement {recoveryRate >= 80 ? 'très bon' : recoveryRate >= 60 ? 'moyen' : 'faible'}</p>
             <p>• Croissance {growthRate > 0 ? 'positive' : growthRate < 0 ? 'négative' : 'stable'}</p>
           </div>
         </div>
         
-        <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
-          <h4 className="font-medium text-green-900 mb-2">🎯 Objectifs Recommandés</h4>
-          <div className="space-y-1 text-sm text-green-800">
+        <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-700">
+          <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">🎯 Objectifs Recommandés</h4>
+          <div className="space-y-1 text-sm text-green-800 dark:text-green-200">
             <p>• DSO cible: ≤ 30 jours</p>
             <p>• Taux recouvrement: ≥ 85%</p>
             <p>• Croissance mensuelle: ≥ 5%</p>

@@ -37,11 +37,11 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Évolution du Chiffre d'Affaires</h3>
-          <p className="text-sm text-gray-600">Comparaison sur 12 mois (année actuelle vs précédente)</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Évolution du Chiffre d'Affaires</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Comparaison sur 12 mois (année actuelle vs précédente)</p>
         </div>
         
         <div className="flex items-center space-x-4">
@@ -69,8 +69,8 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
               onClick={() => setChartType('area')}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                 chartType === 'area' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               <Activity className="w-4 h-4" />
@@ -79,8 +79,8 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
               onClick={() => setChartType('line')}
               className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                 chartType === 'line' 
-                  ? 'bg-white text-blue-600 shadow-sm' 
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 text-blue-600 shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               <BarChart3 className="w-4 h-4" />
@@ -91,25 +91,25 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
 
       {/* Statistiques rapides */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
           <div className="text-lg font-bold text-blue-600">{currentYearTotal.toLocaleString()}</div>
-          <div className="text-xs text-blue-700">Année actuelle</div>
+          <div className="text-xs text-blue-700 dark:text-blue-300">Année actuelle</div>
         </div>
-        <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="text-lg font-bold text-gray-600">{previousYearTotal.toLocaleString()}</div>
-          <div className="text-xs text-gray-700">Année précédente</div>
+        <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+          <div className="text-lg font-bold text-gray-600 dark:text-gray-300">{previousYearTotal.toLocaleString()}</div>
+          <div className="text-xs text-gray-700 dark:text-gray-400">Année précédente</div>
         </div>
-        <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
+        <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
           <div className="text-lg font-bold text-green-600">
             {Math.abs(currentYearTotal - previousYearTotal).toLocaleString()}
           </div>
-          <div className="text-xs text-green-700">Différence (MAD)</div>
+          <div className="text-xs text-green-700 dark:text-green-300">Différence (MAD)</div>
         </div>
-        <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-200">
+        <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
           <div className="text-lg font-bold text-purple-600">
             {data.length > 0 ? (currentYearTotal / data.length).toFixed(0) : '0'}
           </div>
-          <div className="text-xs text-purple-700">Moyenne mensuelle</div>
+          <div className="text-xs text-purple-700 dark:text-purple-300">Moyenne mensuelle</div>
         </div>
       </div>
 
@@ -200,7 +200,7 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
       </div>
 
       {/* Analyse de tendance */}
-      <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+      <div className="mt-6 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
@@ -215,20 +215,20 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
               )}
             </div>
             <div>
-              <p className="font-medium text-gray-900">
+              <p className="font-medium text-gray-900 dark:text-gray-100">
                 {growthRate > 0 ? 'Croissance positive' : 
                  growthRate < 0 ? 'Décroissance' : 'Stabilité'}
               </p>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-300">
                 {growthRate > 0 ? '+' : ''}{growthRate.toFixed(1)}% vs année précédente
               </p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-lg font-bold text-blue-900">
+            <p className="text-lg font-bold text-blue-900 dark:text-blue-100">
               {Math.abs(currentYearTotal - previousYearTotal).toLocaleString()} MAD
             </p>
-            <p className="text-sm text-blue-700">Écart absolu</p>
+            <p className="text-sm text-blue-700 dark:text-blue-300">Écart absolu</p>
           </div>
         </div>
       </div>
