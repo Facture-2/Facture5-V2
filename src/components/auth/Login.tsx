@@ -43,7 +43,11 @@ export default function Login() {
     setIsLoading(true);
     setError('');
 
-    try {
+      if (error.message && error.message.includes('popup')) {
+        setError(error.message);
+      } else {
+        setError('Erreur lors de la connexion avec Google');
+      }
       const success = await loginWithGoogle();
       if (!success) {
         setError('Erreur de connexion avec Google');
