@@ -48,42 +48,41 @@ const Reports: React.FC = () => {
   const paymentStatusData = React.useMemo(() => {
     if (!invoices || invoices.length === 0) {
       return [
-        { name: 'Paid', value: 0, amount: 0, percentage: 0, color: '#10B981' },
-        { name: 'Pending', value: 0, amount: 0, percentage: 0, color: '#F59E0B' },
-        { name: 'Overdue', value: 0, amount: 0, percentage: 0, color: '#EF4444' }
+        { name: 'Payées', value: 0, amount: 0, percentage: 0, color: '#10B981' },
+        { name: 'Non payées', value: 0, amount: 0, percentage: 0, color: '#EF4444' },
+        { name: 'Encaissées', value: 0, amount: 0, percentage: 0, color: '#F59E0B' }
       ];
     }
 
-    const statusStats = invoices.reduce((acc: any, invoice: any) => {
-      const status = invoice.status || 'pending';
-      if (!acc[status]) {
-        acc[status] = { count: 0, amount: 0 };
-      }
-      acc[status].count += 1;
-      acc[status].amount += parseFloat(invoice.total) || 0;
-      return acc;
-    }, {});
-
-    const totalAmount = Object.values(statusStats).reduce((sum: number, stat: any) => sum + stat.amount, 0);
+    // Grouper par statut réel des factures
+    const paidInvoices = invoices.filter(inv => inv.status === 'paid');
+    const unpaidInvoices = invoices.filter(inv => inv.status === 'unpaid');
+    const collectedInvoices = invoices.filter(inv => inv.status === 'collected');
     
+    const paidAmount = paidInvoices.reduce((sum, inv) => sum + inv.totalTTC, 0);
+    const unpaidAmount = unpaidInvoices.reduce((sum, inv) => sum + inv.totalTTC, 0);
+    const collectedAmount = collectedInvoices.reduce((sum, inv) => sum + inv.totalTTC, 0);
+    
+    const totalAmount = paidAmount + unpaidAmount + collectedAmount;
+
     const data = [
       { 
-        name: 'Paid', 
-        value: statusStats.paid?.count || 0, 
-        amount: statusStats.paid?.amount || 0,
+        name: 'Payées', 
+        value: paidInvoices.length, 
+        amount: paidAmount,
         color: '#10B981' 
       },
       { 
-        name: 'Pending', 
-        value: statusStats.pending?.count || 0, 
-        amount: statusStats.pending?.amount || 0,
-        color: '#F59E0B' 
+        name: 'Non payées', 
+        value: unpaidInvoices.length, 
+        amount: unpaidAmount,
+        color: '#EF4444' 
       },
       { 
-        name: 'Overdue', 
-        value: statusStats.overdue?.count || 0, 
-        amount: statusStats.overdue?.amount || 0,
-        color: '#EF4444' 
+        name: 'Encaissées', 
+        value: collectedInvoices.length, 
+        amount: collectedAmount,
+        color: '#F59E0B' 
       }
     ];
 
