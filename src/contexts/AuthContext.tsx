@@ -3,8 +3,6 @@ import {
   User as FirebaseUser,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   createUserWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
@@ -204,36 +202,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Handle redirect result from Google sign-in
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result?.user) {
-          const user = result.user;
-          
-          // Check if user exists in Firestore
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          
-          if (!userDoc.exists()) {
-            // Create new user document
-            await setDoc(doc(db, 'users', user.uid), {
-              email: user.email,
-              displayName: user.displayName,
-              photoURL: user.photoURL,
-              role: 'user',
-              createdAt: new Date(),
-              isActive: true,
-              companyId: null
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Erreur lors du traitement du résultat de redirection:', error);
-      }
-    };
-
-    handleRedirectResult();
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setFirebaseUser(firebaseUser);
@@ -396,34 +364,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
-      try {
-        const result = await signInWithPopup(auth, googleProvider);
-        const user = result.user;
-        
-        // Check if user exists in Firestore
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        
-        if (!userDoc.exists()) {
-          // Create new user document
-          await setDoc(doc(db, 'users', user.uid), {
-            email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            role: 'user',
-            createdAt: new Date(),
-            isActive: true,
-            companyId: null
-          });
-        }
-      } catch (popupError: any) {
-        if (popupError.code === 'auth/popup-blocked') {
-          // Fallback to redirect method when popup is blocked
-          await signInWithRedirect(auth, googleProvider);
-          return true; // Don't set loading to false as redirect will happen
-        }
-        throw popupError; // Re-throw other errors
-      }
-      
       const result = await signInWithPopup(auth, googleProvider);
       const firebaseUser = result.user;
       

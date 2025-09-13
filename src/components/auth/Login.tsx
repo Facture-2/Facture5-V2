@@ -43,17 +43,17 @@ export default function Login() {
     setIsLoading(true);
     setError('');
 
-      if (error.message && error.message.includes('popup')) {
-        setError(error.message);
-      } else {
-        setError('Erreur lors de la connexion avec Google');
-      }
+    try {
       const success = await loginWithGoogle();
       if (!success) {
         setError('Erreur de connexion avec Google');
       }
     } catch (err: any) {
-      setError('Erreur de connexion avec Google');
+      if (err.message && err.message.includes('popup')) {
+        setError(err.message);
+      } else {
+        setError('Erreur lors de la connexion avec Google');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -232,6 +232,7 @@ function RegisterForm({ onBack }: { onBack: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+  const [showGoogleForm, setShowGoogleForm] = useState(false);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -245,7 +246,7 @@ function RegisterForm({ onBack }: { onBack: () => void }) {
     phone: '',
     address: '',
     logo: '',
-    email: '',
+    companyEmail: '',
     patente: '',
     website: ''
   });
@@ -268,7 +269,7 @@ function RegisterForm({ onBack }: { onBack: () => void }) {
       return;
     }
 
-    if (!formData.companyName || !formData.ice || !formData.email || !formData.patente || !formData.website) {
+    if (!formData.companyName || !formData.ice || !formData.companyEmail || !formData.patente || !formData.website) {
       setError('Le nom de la société, l\'ICE, l\'email, la patente et le site web sont obligatoires');
       setIsLoading(false);
       return;
@@ -507,8 +508,8 @@ function RegisterForm({ onBack }: { onBack: () => void }) {
                 </label>
                 <input
                   type="email"
-                  name="email"
-                  value={formData.email}
+                  name="companyEmail"
+                  value={formData.companyEmail}
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
