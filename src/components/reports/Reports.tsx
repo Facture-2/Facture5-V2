@@ -15,6 +15,78 @@ const Reports: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const { invoices } = useData();
 
+  // Prepare revenue evolution data
+  const revenueEvolutionData = React.useMemo(() => {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    
+    const currentYear = new Date().getFullYear();
+    const previousYear = currentYear - 1;
+    
+    return months.map((month, index) => ({
+      month,
+      currentYear: Math.floor(Math.random() * 50000) + 20000, // Mock data
+      previousYear: Math.floor(Math.random() * 45000) + 15000, // Mock data
+      date: `${currentYear}-${String(index + 1).padStart(2, '0')}-01`
+    }));
+  }, []);
+
+  // Prepare cashflow data
+  const cashflowData = React.useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    return months.map(month => ({
+      month,
+      income: Math.floor(Math.random() * 40000) + 20000,
+      expenses: Math.floor(Math.random() * 30000) + 15000,
+      profit: Math.floor(Math.random() * 15000) + 5000
+    }));
+  }, []);
+
+  // Prepare payment status data
+  const paymentStatusData = React.useMemo(() => {
+    if (!invoices || invoices.length === 0) {
+      return [
+        { name: 'Paid', value: 0, color: '#10B981' },
+        { name: 'Pending', value: 0, color: '#F59E0B' },
+        { name: 'Overdue', value: 0, color: '#EF4444' }
+      ];
+    }
+
+    const statusCounts = invoices.reduce((acc: any, invoice: any) => {
+      const status = invoice.status || 'pending';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    return [
+      { name: 'Paid', value: statusCounts.paid || 0, color: '#10B981' },
+      { name: 'Pending', value: statusCounts.pending || 0, color: '#F59E0B' },
+      { name: 'Overdue', value: statusCounts.overdue || 0, color: '#EF4444' }
+    ];
+  }, [invoices]);
+
+  // Prepare payment method data
+  const paymentMethodData = React.useMemo(() => {
+    return [
+      { name: 'Bank Transfer', value: 45, color: '#3B82F6' },
+      { name: 'Credit Card', value: 30, color: '#10B981' },
+      { name: 'Cash', value: 15, color: '#F59E0B' },
+      { name: 'Check', value: 10, color: '#8B5CF6' }
+    ];
+  }, []);
+
+  // Prepare payment delay data
+  const paymentDelayData = React.useMemo(() => {
+    const ranges = ['0-30 days', '31-60 days', '61-90 days', '90+ days'];
+    return ranges.map(range => ({
+      range,
+      count: Math.floor(Math.random() * 20) + 5,
+      amount: Math.floor(Math.random() * 50000) + 10000
+    }));
+  }, []);
+
   // Calculate top clients data from invoices
   const topClientsData = React.useMemo(() => {
     if (!invoices || invoices.length === 0) return [];
@@ -121,8 +193,8 @@ const Reports: React.FC = () => {
           <>
             <FinancialKPIs invoices={invoices || []} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <RevenueEvolutionChart />
-              <CashflowChart />
+              <RevenueEvolutionChart data={revenueEvolutionData} />
+              <CashflowChart data={cashflowData} />
             </div>
             <TopClientsChart data={topClientsData} />
           </>
@@ -130,10 +202,10 @@ const Reports: React.FC = () => {
 
         {activeTab === 'revenue' && (
           <div className="space-y-6">
-            <RevenueEvolutionChart />
+            <RevenueEvolutionChart data={revenueEvolutionData} />
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <TopClientsChart data={topClientsData} />
-              <CashflowChart />
+              <CashflowChart data={cashflowData} />
             </div>
           </div>
         )}
@@ -141,10 +213,10 @@ const Reports: React.FC = () => {
         {activeTab === 'payments' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <PaymentStatusChart />
-              <PaymentMethodChart />
+              <PaymentStatusChart data={paymentStatusData} />
+              <PaymentMethodChart data={paymentMethodData} />
             </div>
-            <PaymentDelayChart />
+            <PaymentDelayChart data={paymentDelayData} />
           </div>
         )}
 

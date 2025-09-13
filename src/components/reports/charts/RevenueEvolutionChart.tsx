@@ -16,8 +16,8 @@ interface RevenueEvolutionChartProps {
 export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartProps) {
   const [chartType, setChartType] = useState<'line' | 'area'>('area');
   
-  const currentYearTotal = data.reduce((sum, item) => sum + item.currentYear, 0);
-  const previousYearTotal = data.reduce((sum, item) => sum + item.previousYear, 0);
+  const currentYearTotal = data?.reduce((sum, item) => sum + item.currentYear, 0) || 0;
+  const previousYearTotal = data?.reduce((sum, item) => sum + item.previousYear, 0) || 0;
   const growthRate = previousYearTotal > 0 ? ((currentYearTotal - previousYearTotal) / previousYearTotal) * 100 : 0;
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -107,7 +107,7 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
         </div>
         <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
           <div className="text-lg font-bold text-purple-600">
-            {data.length > 0 ? (currentYearTotal / data.length).toFixed(0) : '0'}
+            {data && data.length > 0 ? (currentYearTotal / data.length).toFixed(0) : '0'}
           </div>
           <div className="text-xs text-purple-700 dark:text-purple-300">Moyenne mensuelle</div>
         </div>
@@ -117,7 +117,7 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'area' ? (
-            <AreaChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <AreaChart data={data || []} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <defs>
                 <linearGradient id="currentYearGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
@@ -161,7 +161,7 @@ export default function RevenueEvolutionChart({ data }: RevenueEvolutionChartPro
               />
             </AreaChart>
           ) : (
-            <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <LineChart data={data || []} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis 
                 dataKey="month" 
